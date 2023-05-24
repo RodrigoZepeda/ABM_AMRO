@@ -1,0 +1,12 @@
+name: ABM_Identifiability_python
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - matplotlib
+  - seaborn
+  - pandas
+  - numpy
+  - mamba
+prefix: /usr/local/Caskroom/miniconda/base/envs/ABM_Identifiability_python
