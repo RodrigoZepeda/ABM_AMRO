@@ -78,16 +78,17 @@ for file in dir_list:
     if match:
         matching_numbers.append(int(match.group(1)))
 
+
 # Loop through all the files
-Days = {}
+Days = np.empty(0, dtype=object)
 for day in range(np.amin(matching_numbers), np.amax(matching_numbers) + 1):
 
     print("Day: " + str(day))
 
     # Read the tables
     patients = pd.read_csv(os.path.join("data_to_py","NY_Network_1_patients_" + str(day) + ".csv"))
-    wards = pd.read_csv(os.path.join("data_to_py", "NY_Network_1_wards_" + str(day) + ".csv"))
-    pfirst = np.loadtxt(os.path.join("data_to_py", "NY_Network_1_Pfirst_" + str(day) + ".csv"))
+    wards    = pd.read_csv(os.path.join("data_to_py", "NY_Network_1_wards_" + str(day) + ".csv"))
+    pfirst   = np.loadtxt(os.path.join("data_to_py", "NY_Network_1_Pfirst_" + str(day) + ".csv"))
 
     # The wfirst files doesn't exist if array in matlab was empty so we check existance
     wfirst_file = os.path.join("data_to_py","NY_Network_1_Wfirst_" + str(day) + ".txt")
@@ -104,13 +105,13 @@ for day in range(np.amin(matching_numbers), np.amax(matching_numbers) + 1):
         activated = np.empty(0)
 
     # We now add them to the network object for the day
-    Days[day] = {
+    Days = np.append(Days, [{
         "Patients": patients,
         "Wards": wards,
         "Pfirst": pfirst,
         "Wfirst": wfirst,
         "Activated": activated,
-    }
+    }])
 
 # Add days to network
 Network["Days"] = Days

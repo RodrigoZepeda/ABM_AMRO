@@ -39,6 +39,8 @@ hyparams = {
     "Date before start": Network["Date before start"],
     # Maximum number of inf_res to generate #FIXME: @Tal add more information
     "Tnum_max": 3,
+    # Desired variance lower and upper parameters for 1/linspace
+    "Std linspace range": [2.0, 20.0],
 }
 
 # Positive individuals in network
@@ -57,7 +59,9 @@ variable_range = {
 hyparams["Number of variables"] = len(variable_range)
 
 # Desired standard deviation (Wantstd in Matlab)
-wanted_std = 1.0 / np.linspace(2.0, 20.0, hyparams["Number of iterations"])
+wanted_std = 1.0 / np.linspace(hyparams["Std linspace range"][0],
+                               hyparams["Std linspace range"][1],
+                               hyparams["Number of iterations"])
 diffs = np.diff(list(variable_range.values()), axis=1)
 wanted_std = wanted_std * diffs
 

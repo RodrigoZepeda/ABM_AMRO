@@ -2,6 +2,9 @@
 data_to_py/*.csv
 data_to_py/*.txt
 julia_identifiability_test/
+*.csv
+*.json
+*.txt
 
 #Other trash
 .DS_Store
