@@ -1,3 +1,10 @@
+# Intermediate files
+data_to_py/
+julia_identifiability_test/
+
+#Other trash
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

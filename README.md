@@ -32,4 +32,12 @@ The structure has the following fields:
 - `daypos` (dataframe) Number of positives by each day. 
 - `wardpos` (dataframe) Number of positives by each day and each ward. 
 
-> :warning: Right now the data is extracted by `DataTransform.m` from the Matlab as not all the matlab structures were directly parsable from Python. Data is stored in `data_to_py`.
+# Executing the repository
+
+> :warning: Right now the data is extracted by `DataTransform.m` from the Matlab as not all the Matlab structures were directly parsable from Python. This should be changed later. 
+
+1. Run the `DataTransform.m` file to extract the Network data `NY_Network_1.mat` from Matlab into `csv` and `txt` files. 
+
+2. Run the `make_network_object.py` file to create the same `Network` object that existed in Matlab but in Python. This will be stored in `data/NY_Network_1.pickle`.
+
+3. You can now run the other files. 
