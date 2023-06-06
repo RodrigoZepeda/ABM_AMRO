@@ -5,6 +5,7 @@ close all
 load('data/NY_Network_1.mat');
 
 %We go through each variable and export it to txt
+mkdir data_to_py
 
 %Variables
 %------------------------------------------------------------
