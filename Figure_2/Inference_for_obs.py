@@ -1,6 +1,4 @@
 import numpy as np
-import pandas as pd
-from datetime import datetime
 import os
 import pickle
 #from Inference_iEAKF import Inference_iEAKF
@@ -38,7 +36,7 @@ hyparams = {
     # No.day0 in Matlab
     "Date before start": Network["Date before start"],
     # Maximum number of inf_res to generate #FIXME: @Tal add more information
-    "Tnum_max": 3,
+    "Trajectory number": 3,
     # Desired variance lower and upper parameters for 1/linspace
     "Std linspace range": [2.0, 20.0],
 }
@@ -59,12 +57,14 @@ variable_range = {
 hyparams["Number of variables"] = len(variable_range)
 
 # Desired standard deviation (Wantstd in Matlab)
-wanted_std = 1.0 / np.linspace(hyparams["Std linspace range"][0],
-                               hyparams["Std linspace range"][1],
-                               hyparams["Number of iterations"])
+wanted_std = 1.0 / np.linspace(start=hyparams["Std linspace range"][0],
+                               stop=hyparams["Std linspace range"][1],
+                               num=hyparams["Number of iterations"],
+                               dtype=float)
 diffs = np.diff(list(variable_range.values()), axis=1)
 wanted_std = wanted_std * diffs
+wanted_std = np.transpose(wanted_std) # Transposing so that it coincides with Matlab
 
-for Tnum in range(hyparams["Tnum_max"]):
+for traj_num in range(hyparams["Trajectory number"]):
     Dits = Inference_iEAKF(variable_range, hyparams, wanted_std, Network["Days"], RPos)
     # Save Dits
