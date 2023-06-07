@@ -123,4 +123,3 @@ dependencies:
   - pillow
   - wheel
   - xarray
-prefix: /usr/local/Caskroom/miniconda/base/envs/ABM_Identifiability_python
