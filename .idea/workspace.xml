@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="6ab57fe4-e969-456b-bff2-72f4fa72eb58" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DataTransform.m" beforeDir="false" afterPath="$PROJECT_DIR$/DataTransform.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Figure_2/Inference_for_obs.py" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_2/Inference_for_obs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/NY_Network_1.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/data/NY_Network_1.pickle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Inference_iEAKF.py" beforeDir="false" afterPath="$PROJECT_DIR$/Inference_iEAKF.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/environment.yml" beforeDir="false" afterPath="$PROJECT_DIR$/environment.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/make_network_object.py" beforeDir="false" afterPath="$PROJECT_DIR$/make_network_object.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/progress_patients_nec.py" beforeDir="false" afterPath="$PROJECT_DIR$/progress_patients_nec.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +29,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true"
   }
