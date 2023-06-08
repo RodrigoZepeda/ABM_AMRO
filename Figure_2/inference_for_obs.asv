@@ -33,7 +33,7 @@ Vrange = array2table(zeros(2,length(VarNames)),...
 Vrange.Beta=[0 ; 0.1]; %Baseline transmission rate, Per day
 Vrange.Gamma=[0.0001 ; 0.1]; %Importation rate, Per admission
 Vrange.Alpha=[1.5 ; 1.5]./365; %Patient decolonization rate, Per day
-Vrange.Rho=[0.0160 ; 0.0160]; %Observation rate, Per day
+Vrange.Rho=[0.0160 ; 0.0160]; %observation rate, Per day
 
 %Vrange.Alpha=[realVars.Alpha ; realVars.Alpha];
 No.vars=size(VarNames,2);

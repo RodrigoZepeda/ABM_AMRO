@@ -6,6 +6,9 @@ julia_identifiability_test/
 *.json
 *.txt
 
+#Keep requirements
+!requirements.txt
+
 #Other trash
 .DS_Store
 

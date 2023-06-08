@@ -32,7 +32,7 @@ Vars=array2table(zeros(1,num_var),'VariableNames',VarNames);
 Vars.Beta=InBeta; %Baseline transmission rate, Per day
 Vars.Gamma=InGamma; %Importation rate, Per admission
 Vars.Alpha(:)=1.5/365; %Patient decolonization rate, Per day
-Vars.Rho(:)=0.0160; %Observation rate, Per day
+Vars.Rho(:)=0.0160; %observation rate, Per day
 %==========================================================================
 
 %timesteps: ===============================================================

@@ -31,7 +31,7 @@ Vrange = array2table(zeros(2,length(VarNames)),...
 Vrange.Beta=[0 ; 0.1]; %Baseline transmission rate, Per day
 Vrange.Gamma=[0.0001 ; 0.1]; %Importation rate, Per admission
 Vrange.Alpha=[1.5 ; 1.5]./365; %Patient decolonization rate, Per day
-Vrange.Rho=[0.0160 ; 0.0160]; %Observation rate, Per day
+Vrange.Rho=[0.0160 ; 0.0160]; %observation rate, Per day
 
 %Vrange.Alpha=[realVars.Alpha ; realVars.Alpha];
 No.vars=size(VarNames,2);
@@ -77,7 +77,7 @@ end
 % Vrange.Beta=[0 ; 0.06]; %Baseline transmission rate, Per day
 % Vrange.Gamma=[0.0001 ; 0.06]; %Importation rate, Per admission
 % Vrange.Alpha=[1.5 ; 1.5]./365; %Patient decolonization rate, Per day
-% Vrange.Rho=[0.0160 ; 0.0160]; %Observation rate, Per day
+% Vrange.Rho=[0.0160 ; 0.0160]; %observation rate, Per day
 % 
 % No.vars=size(VarNames,2);
 % %==========================================================================
@@ -129,11 +129,11 @@ end
 % 
 % 
 %             %Kalman Filter: -------------------------------------------
-%             Obs=Pos;
-%             Obs(isnan(Obs))=0;
+%             obs=Pos;
+%             obs(isnan(obs))=0;
 %             obstruth=TPos(t);
 % 
-%             So=iEAKF(Obs,Obstruth,So,Vrange);
+%             So=iEAKF(obs,obstruth,So,Vrange);
 % 
 %             %--------------------------------------------------------------------
 %             %Jittering between time steps
