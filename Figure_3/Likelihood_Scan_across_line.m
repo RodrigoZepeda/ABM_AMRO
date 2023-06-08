@@ -20,7 +20,7 @@ Vars_bank=array2table(zeros(num_space,num_var),'VariableNames',VarNames);
 Vars_bank.Beta=Betas; %Baseline transmission rate, Per day
 Vars_bank.Gamma=Gammas; %Importation rate, Per admission
 Vars_bank.Alpha(:)=1.5/365; %Patient decolonization rate, Per day
-Vars_bank.Rho(:)=0.0160; %Observation rate, Per day
+Vars_bank.Rho(:)=0.0160; %observation rate, Per day
 %==========================================================================
 
 

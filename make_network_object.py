@@ -47,19 +47,19 @@ date_start = pd.read_table(os.path.join("data_to_py", "NY_Network_1_day0.txt"), 
 # Construct part of the network dictionary
 Network = {
     # Network.Days in Matlab
-    "Number of days": pd.read_table(os.path.join("data_to_py", "NY_Network_1_NDays.txt"), header=None)[0][0],
+    "Number of days": pd.read_table(os.path.join("data_to_py", "NY_Network_1_NDays.txt"), header=None, dtype=int)[0][0],
     # Network.NPat in Matlab
-    "Number of patients": pd.read_table(os.path.join("data_to_py", "NY_Network_1_NPat.txt"), header=None)[0][0],
+    "Number of patients": pd.read_table(os.path.join("data_to_py", "NY_Network_1_NPat.txt"), header=None, dtype=int)[0][0],
     # Network.NWard in Matlab
-    "Number of wards": pd.read_table(os.path.join("data_to_py", "NY_Network_1_NWard.txt"), header=None)[0][0],
+    "Number of wards": pd.read_table(os.path.join("data_to_py", "NY_Network_1_NWard.txt"), header=None, dtype=int)[0][0],
     # Network.WardSize in Matlab
     "Ward size": pd.read_table(os.path.join("data_to_py", "NY_Network_1_WardSize.txt"), header=None)[0][0],
     # No.day0 in Matlab
     "Date before start": datetime.strptime(date_start, '%d-%b-%Y'),
     # DayPos in Matlab
-    "Daily positive count": pd.read_csv(os.path.join("data_to_py", "NY_Network_1_daypos.csv")),
+    "Daily positive count": pd.read_csv(os.path.join("data_to_py", "NY_Network_1_daypos.csv"), dtype=int),
     # WardPos in Matlab
-    "Ward positive count": pd.read_csv(os.path.join("data_to_py", "NY_Network_1_wardpos.csv")),
+    "Ward positive count": pd.read_csv(os.path.join("data_to_py", "NY_Network_1_wardpos.csv"), dtype=int),
 }
 
 # Construct the Days field of the network as a
@@ -78,7 +78,6 @@ for file in dir_list:
     if match:
         matching_numbers.append(int(match.group(1)))
 
-
 # Loop through all the files
 Days = np.empty(0, dtype=object)
 for day in range(np.amin(matching_numbers), np.amax(matching_numbers) + 1):
@@ -86,12 +85,12 @@ for day in range(np.amin(matching_numbers), np.amax(matching_numbers) + 1):
     print("Day: " + str(day))
 
     # Read the tables
-    patients = pd.read_csv(os.path.join("data_to_py","NY_Network_1_patients_" + str(day) + ".csv"))
-    wards    = pd.read_csv(os.path.join("data_to_py", "NY_Network_1_wards_" + str(day) + ".csv"))
-    pfirst   = np.loadtxt(os.path.join("data_to_py", "NY_Network_1_Pfirst_" + str(day) + ".csv"))
+    patients = pd.read_csv(os.path.join("data_to_py", "NY_Network_1_patients_" + str(day) + ".csv"))
+    wards = pd.read_csv(os.path.join("data_to_py", "NY_Network_1_wards_" + str(day) + ".csv"))
+    pfirst = np.loadtxt(os.path.join("data_to_py", "NY_Network_1_Pfirst_" + str(day) + ".csv"), dtype=int)
 
     # The wfirst files doesn't exist if array in matlab was empty so we check existance
-    wfirst_file = os.path.join("data_to_py","NY_Network_1_Wfirst_" + str(day) + ".txt")
+    wfirst_file = os.path.join("data_to_py", "NY_Network_1_Wfirst_" + str(day) + ".txt")
     if os.path.isfile(wfirst_file):
         wfirst = np.loadtxt(wfirst_file, dtype="int")
     else:
@@ -117,7 +116,7 @@ for day in range(np.amin(matching_numbers), np.amax(matching_numbers) + 1):
 Network["Days"] = Days
 
 # Save everything
-with open(os.path.join("data","NY_Network_1.pickle"), "wb") as file:
+with open(os.path.join("data", "NY_Network_1.pickle"), "wb") as file:
     pickle.dump(Network, file)
 
 # Let user know
