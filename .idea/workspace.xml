@@ -5,25 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ab57fe4-e969-456b-bff2-72f4fa72eb58" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/iEAKF.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Figure_2/Inf_res_1.pickle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Figure_2/Inf_res_2.pickle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Figure_2/Inf_res_3.pickle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Figure_2/Make_trajes_for_infered_pars.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Figure_2/Trajs.pickle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Figure_2/plot_Fig_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_2/Fig_2.eps" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_2/Fig_2.eps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Figure_2/Inference_for_obs.py" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_2/Inference_for_obs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_2/Make_trajes_for_infered_pars.m" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_2/Make_trajes_for_infered_pars.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_2/inference_for_obs.asv" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_2/inference_for_obs.asv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_2/inference_for_obs.m" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_2/inference_for_obs.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_3/Likelihood_Scan_across_line.m" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_3/Likelihood_Scan_across_line.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_3/Likelihood_scan_narrow.m" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_3/Likelihood_scan_narrow.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_4_5/Figure_4_5.m" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_4_5/Figure_4_5.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_4_5/Inp_and_nos_allong_line_Intervention.asv" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_4_5/Inp_and_nos_allong_line_Intervention.asv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_6/Inference_of_different_trajs.m" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_6/Inference_of_different_trajs.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_6/Likelihood_Scan_for_infered.m" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_6/Likelihood_Scan_for_infered.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_6/Likelihood_Scan_for_infered_old.m" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_6/Likelihood_Scan_for_infered_old.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Figure_2/inference_for_obs.asv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Inference_iEAKF.py" beforeDir="false" afterPath="$PROJECT_DIR$/Inference_iEAKF.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/NY_Network_1.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/data/NY_Network_1.pickle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/environment.yml" beforeDir="false" afterPath="$PROJECT_DIR$/environment.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/make_network_object.py" beforeDir="false" afterPath="$PROJECT_DIR$/make_network_object.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progress_patients_nec.py" beforeDir="false" afterPath="$PROJECT_DIR$/progress_patients_nec.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/progress_patients_uniform.py" beforeDir="false" afterPath="$PROJECT_DIR$/progress_patients_uniform.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,17 +37,21 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2QqhTYtXdlfuHn4YyZZFSDpKsVi" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -65,5 +62,8 @@
       <updated>1686087027017</updated>
     </task>
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>

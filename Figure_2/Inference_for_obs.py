@@ -3,7 +3,7 @@ import os
 import pickle
 import pandas as pd
 
-# from Inference_iEAKF import Inference_iEAKF
+from Inference_iEAKF import Inference_iEAKF
 
 """
 To generate the hyperparameters and associated files for the time being you need
@@ -17,8 +17,8 @@ I'm using Google's style guide for Python: https://google.github.io/styleguide/p
 np.random.seed(seed=2487523)
 
 # Hyperparameter setup.
-with open(os.path.join("data", "NY_Network_1.pickle"), "rb") as file:
-    Network = pickle.load(file)
+with open(os.path.join("data", "NY_network_1.pickle"), "rb") as file:
+    network = pickle.load(file)
 
 hyparams = {
     # No.Iter in Matlab
@@ -30,13 +30,13 @@ hyparams = {
     # No.IntP in Matlab
     "Probability of colonized upon admission": 0.05,
     # No.Days in Matlab
-    "Number of days": Network["Number of days"],
+    "Number of days": network["Number of days"],
     # No.Pat in Matlab
-    "Number of patients": Network["Number of patients"],
+    "Number of patients": network["Number of patients"],
     # No.ward in Matlab
-    "Number of wards": Network["Number of wards"],
+    "Number of wards": network["Number of wards"],
     # No.day0 in Matlab
-    "Date before start": Network["Date before start"],
+    "Date before start": network["Date before start"],
     # Maximum number of inf_res to generate #FIXME: @Tal add more information
     "Trajectory number": 3,
     # Desired variance lower and upper parameters for 1/linspace
@@ -44,7 +44,7 @@ hyparams = {
 }
 
 # Positive individuals in network
-daily_positive = Network["Daily positive count"]
+daily_positive = network["Daily positive count"]
 daily_positive['cumsum'] = daily_positive['positives'].cumsum()
 r_pos = np.diff(daily_positive['cumsum'][::hyparams["Number of days in a timestep"]])
 
@@ -66,6 +66,8 @@ wanted_std = [1.0 / np.linspace(start=hyparams["Std linspace range"][0],
 diffs = np.diff(variable_range, axis=0)
 wanted_std = np.transpose(wanted_std) * diffs
 
+#TODO: Paralelize this here
 for traj_num in range(hyparams["Trajectory number"]):
-    Dits = Inference_iEAKF(variable_range, hyparams, wanted_std, Network["Days"], r_pos)
-    # Save Dits
+    dits = Inference_iEAKF(variable_range, hyparams, wanted_std, network["Days"], r_pos)
+    with open(os.path.join("Figure_2", "Inf_res_" + str(traj_num + 1) + ".pickle"), "wb") as file:
+        pickle.dump(dits, file)
