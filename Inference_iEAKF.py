@@ -2,6 +2,8 @@ import numpy as np
 from progress_patients_nec import progress_patients_nec
 from iEAKF import iEAKF
 import pandas as pd
+import time
+
 
 def Inference_iEAKF(variable_range, hyparams, wanted_std, days, r_pos):
     # No fields:
@@ -28,12 +30,13 @@ def Inference_iEAKF(variable_range, hyparams, wanted_std, days, r_pos):
                                                               hyparams["Number of ensemble members"])
     samples_from_parameters = pd.DataFrame(samples_from_parameters)
 
-    #Add initial samples
+    # Add initial samples
     betas = samples_from_parameters["Beta"].to_numpy()
     gammas = samples_from_parameters["Gamma"].to_numpy()
     poss = samples_from_parameters["Beta"].to_numpy()
 
     # Iterations: =============================================================
+    start_time = time.time()
     for n in range(hyparams["Number of iterations"]):
 
         xpost = np.zeros(
@@ -58,37 +61,38 @@ def Inference_iEAKF(variable_range, hyparams, wanted_std, days, r_pos):
             for j in range(2):
                 if np.std(samples_from_parameters.iloc[:, j]) < wanted_std[n, j]:
                     sig = np.sqrt(np.square(wanted_std[n, j]) - np.square(np.std(samples_from_parameters.iloc[:, j])))
-                    samples_from_parameters.iloc[:, j] = samples_from_parameters.iloc[:, j] + np.random.normal(0, sig, (hyparams['Number of ensemble members'],))
-                    samples_from_parameters.iloc[samples_from_parameters.iloc[:, j] < variable_range.iloc[0, j], j] = variable_range.iloc[0, j]  # check lower bound
-                    samples_from_parameters.iloc[samples_from_parameters.iloc[:, j] > variable_range.iloc[1, j], j] = variable_range.iloc[1, j]  # check upper bound
+                    samples_from_parameters.iloc[:, j] = samples_from_parameters.iloc[:, j] + np.random.normal(0, sig, (
+                    hyparams['Number of ensemble members'],))
+                    samples_from_parameters.iloc[samples_from_parameters.iloc[:, j] < variable_range.iloc[0, j], j] = \
+                    variable_range.iloc[0, j]  # check lower bound
+                    samples_from_parameters.iloc[samples_from_parameters.iloc[:, j] > variable_range.iloc[1, j], j] = \
+                    variable_range.iloc[1, j]  # check upper bound
 
             xpost[:, :, t] = samples_from_parameters.values.T
 
-        #Exit time loop
+        # Exit time loop
         theta[:, n + 1] = np.mean(xpost, axis=(1, 2)).squeeze()
 
-        #TODO: Aquí vamos
-        betas = np.concatenate((betas, xpost[0, :, :].squeeze()), axis = 1)
-        gammas = np.concatenate((gammas, xpost[1, :, :].squeeze()))
+        betas = np.column_stack((betas, xpost[0, :, :].squeeze()))
+        gammas = np.column_stack((gammas, xpost[1, :, :].squeeze()))
 
         samples_from_parameters = np.mean(xpost, axis=2).T
-        betas.append(samples_from_parameters[:, 0])
-        gammas.append(samples_from_parameters[:, 1])
+        betas = np.column_stack((betas, samples_from_parameters[:, 0]))
+        gammas = np.column_stack((gammas, samples_from_parameters[:, 1]))
 
-        VarNames = [f"Var_{i}" for i in range(samples_from_parameters.shape[1])]
-        samples_from_parameters = pd.DataFrame(samples_from_parameters, columns=VarNames)
+        samples_from_parameters = pd.DataFrame(samples_from_parameters, columns=variable_range.columns)
 
-        print(f'iteration {n} - {toc / 60} mins')
+        elapsed_time = time.time() - start_time
+        print(f'iteration {n} - {elapsed_time / 60: .2f} mins')
 
-    Dits = {}
-    Dits['realTraj'] = RPos
-    Dits['gammas'] = gammas
-    Dits['betas'] = betas
-    Dits['Poss'] = Poss
-    Dits['Vrange'] = Vrange
-    Dits['tmstep'] = No_tmstep
-    Dits['IntP'] = No_IntP
-    Dits['day0'] = No_day0
-    Dits['num_times'] = No_times
-    Dits['num_ens'] = No_ens
-    Dits['num_iter'] = No_Iter
+    return {'realTraj': r_pos,
+            'gammas': gammas,
+            'betas': betas,
+            'poss': poss,
+            'variable_range': variable_range,
+            'Number of days in a timestep': hyparams["Number of days in a timestep"],
+            'Probability of colonized upon admission': hyparams['Probability of colonized upon admission'],
+            'Date before start': hyparams["Date before start"],
+            'Number of times': hyparams["Number of times"],
+            'Number of ensemble members': hyparams["Number of ensemble members"],
+            'Number of iterations': hyparams["Number of iterations"]}
