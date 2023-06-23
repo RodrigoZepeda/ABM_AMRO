@@ -1,11 +1,12 @@
 import numpy as np
 
+
 def progress_patients_uniform(days, p_pre, parameters):
     # Progressing the status of E ensembles by one day
     # No environmental contamination
     # Returns the positives, the total new patients, and the importations
 
-    pos = 0
+    positives = 0
     nos = 0
     imp = 0
     p_status = p_pre
@@ -14,7 +15,7 @@ def progress_patients_uniform(days, p_pre, parameters):
 
     for d in range(1, len(days)):
 
-        p_status = (1 - parameters["Alpha"][0])*p_pre
+        p_status = (1 - parameters["Alpha"][0]) * p_pre
 
         for k in range(active_w.shape[0]):
             temp = active_p["ward"] == active_w["ward"][k]
@@ -47,6 +48,6 @@ def progress_patients_uniform(days, p_pre, parameters):
         temp = p_status[active_p["MRN"], :]
         test = np.tile(parameters["Rho"], (temp.shape[0], 1))
         test = test > np.random.rand(*test.shape)
-        pos += np.sum(temp * test, axis=0)
+        positives += np.sum(temp * test, axis=0)
 
-    return p_status, pos, nos, imp
+    return p_status, positives, nos, imp

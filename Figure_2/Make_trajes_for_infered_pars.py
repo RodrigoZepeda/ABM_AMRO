@@ -1,9 +1,17 @@
 import numpy as np
 import pandas as pd
-import scipy.io
 import pickle
 import os
-from progress_patients_uniform import progress_patients_uniform
+import sys
+
+#Add parent directory functions to path
+#https://stackoverflow.com/a/36623762/5067372
+p = os.path.abspath('..')
+if p not in sys.path:
+    sys.path.append(p)
+
+#Load progress patients function
+from ABM_Identifiability_python.progress_patients_uniform import progress_patients_uniform
 
 # Load data
 with open(os.path.join("Figure_2","Inf_res_1.pickle"), "rb") as file:
