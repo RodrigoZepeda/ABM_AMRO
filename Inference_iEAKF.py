@@ -6,13 +6,6 @@ import time
 
 
 def Inference_iEAKF(variable_range, hyparams, wanted_std, days, r_pos):
-    # No fields:
-    # 1. tmstep - number of days in a time step
-    # 2. Days - number of days in the data set
-    # 3. vars - number of variables
-    # 4. Iter - number of iterations
-    # 5. Ens - number of ensemble members
-    # 6. IntP - probability to be colonized on day 0
 
     # Timesteps:
     ts = np.arange(start=1, stop=hyparams["Number of days"], step=hyparams["Number of days in a timestep"])

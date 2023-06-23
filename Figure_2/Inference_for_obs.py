@@ -2,8 +2,16 @@ import numpy as np
 import os
 import pickle
 import pandas as pd
+import sys
 
-from Inference_iEAKF import Inference_iEAKF
+#Add parent directory functions to path
+#https://stackoverflow.com/a/36623762/5067372
+p = os.path.abspath('..')
+if p not in sys.path:
+    sys.path.append(p)
+
+#Load progress patients function
+from ABM_Identifiability_python.Inference_iEAKF import Inference_iEAKF
 
 """
 To generate the hyperparameters and associated files for the time being you need
