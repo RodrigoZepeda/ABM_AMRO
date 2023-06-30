@@ -5,6 +5,11 @@ julia_identifiability_test/
 *.csv
 *.json
 *.txt
+*.rds
+*.Rhistory
+*.Rdata
+data_cleaning/data_files/*
+
 
 #Keep requirements
 !requirements.txt

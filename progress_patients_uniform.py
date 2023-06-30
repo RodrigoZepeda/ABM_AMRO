@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def progress_patients_uniform(days, p_pre, parameters):
     # Progressing the status of E ensembles by one day
     # No environmental contamination
