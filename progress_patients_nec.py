@@ -17,6 +17,7 @@ def progress_patients_nec(days, p_pre, samples_from_parameters):
 
         p_status = p_pre * (1 - np.tile(samples_from_parameters["Alpha"], (p_pre.shape[0], 1)))
 
+        #Loop through each ward
         for k in range(active_w.shape[0]):
             temp = active_p["ward"] == active_w["ward"][k]
 
