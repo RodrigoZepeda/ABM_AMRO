@@ -5,14 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ab57fe4-e969-456b-bff2-72f4fa72eb58" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/progress_patients.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data_cleaning/Data_May_2023_to_network_matrix.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_3/Scan_line_4.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_3/Scan_line_4.pickle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_3/fig_3_scan_across_line_1.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_3/fig_3_scan_across_line_1.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_3/fig_3_scan_across_line_2.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_3/fig_3_scan_across_line_2.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Figure_3/output.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Figure_3/output.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progress_patients_nec.py" beforeDir="false" afterPath="$PROJECT_DIR$/progress_patients_nec.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progress_patients_uniform.py" beforeDir="false" afterPath="$PROJECT_DIR$/progress_patients_uniform.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/environment.yml" beforeDir="false" afterPath="$PROJECT_DIR$/environment.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/progress_patients.py" beforeDir="false" afterPath="$PROJECT_DIR$/progress_patients.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,19 +37,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
-      "Python"
+  &quot;keyToStringList&quot;: {
+    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
+      &quot;Python&quot;
     ]
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/data_cleaning" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
