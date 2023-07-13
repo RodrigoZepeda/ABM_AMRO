@@ -10,8 +10,10 @@ def progress_patients_probability_ward_1_timestep(colonized, new_arrivals, total
         progress_patients_probability_ward_1_timestep progresses all patients in a ward from 1 timestep to the next
         The function is defined to progress each patient `i` of ward `w` by computing their colonized C
         status on day `d` as:
-            C[i,d] = [(1- alpha)*C[i,d-1]/k + beta/N_[d]*(1-C[i,d-1]/k)*sum(C_[:,d-1]/k)]*(1 - h[i,d]) +
+            p[i,d] = [(1- alpha)*C[i,d-1]/k + beta/N_[d]*(1-C[i,d-1]/k)*sum(C_[:,d-1]/k)]*(1 - h[i,d]) +
                 gamma*h[i,d]
+        and
+            C[i,d] ~ Bernoulli(p[i,d])
         where:
         - gamma is the importation rate,
         - alpha is the clearance rate
@@ -29,15 +31,17 @@ def progress_patients_probability_ward_1_timestep(colonized, new_arrivals, total
             must contain `gamma`, `beta` and `alpha` entries.
         :param weights: Parameter describing the percent of day spent by individual in ward.
 
-        :return: array of colonized individuals by day d. Individuals are rows. Returns multiple
-            columns if you are evaluating several parameters at once.
+        :return: `colonized` array of colonized individuals by day d. Individuals are rows.
+
+
+        Returns multiple columns if you are evaluating several parameters at once.
 
         Examples:
         ```
         #Advance the following ward one day testing one set of parameters
         np.random.seed(3245)
-        colonized = np.random.binomial(n=1,p=0.4,size=7)
-        new_arrivals = np.random.binomial(n=1,p=0.05,size=7)
+        colonized = np.random.binomial(n=1,p=0.4,size=7) == 1
+        new_arrivals = np.random.binomial(n=1,p=0.05,size=7) == 1
         total_patients = 200
         parameters = numba.typed.Dict()
         parameters["alpha"] = 0.15
@@ -49,8 +53,8 @@ def progress_patients_probability_ward_1_timestep(colonized, new_arrivals, total
         #Advance the following ward one day testing multiple parameters
         np.random.seed(3245)
         num_parameters = 10
-        colonized = np.random.binomial(n=1,p=0.4,size=7)
-        new_arrivals = np.random.binomial(n=1,p=0.05,size=7)
+        colonized = np.random.binomial(n=1,p=0.4,size=7) == 1
+        new_arrivals = np.random.binomial(n=1,p=0.05,size=7) == 1
         colonized = np.tile(colonized, (num_parameters,1)).transpose()
         new_arrivals = np.tile(new_arrivals, (num_parameters,1)).transpose()
         total_patients = 200
@@ -83,16 +87,19 @@ def progress_patients_probability_ward_1_timestep(colonized, new_arrivals, total
 
     # Compute the new colonized and return
     # new_colonized = ward_attributable + arrival_attributable
-    new_colonized = np.multiply(ward_attributable, 1 - new_arrivals) + arrival_attributable
+    colonized_probability = np.multiply(ward_attributable, 1 - new_arrivals) + arrival_attributable
+
+    # Calculate the number of colonized individuals from the binomial model
+    # https://stackoverflow.com/questions/66468953/numba-compatibility-with-numpy-random-binomial
+    random_probability = np.random.uniform(low=0,high=1,size=colonized_probability.shape)
+    new_colonized = random_probability < colonized_probability
 
     return new_colonized
 
 
 @jit(nopython=True)
 def progress_patients_1_timestep(colonized, wards, new_arrivals, weights, total_patients_per_ward, parameters,
-                                 method="cases",
-                                 ward_progression_function=progress_patients_probability_ward_1_timestep,
-                                 **kwargs):
+                                 ward_progression_function):
     """
         progress_patients_1_timestep progresses all patients in all wards from 1 timestep to the next
         The function is defined to progress each patient `i` of each ward `w` by computing their colonized C
@@ -121,9 +128,9 @@ def progress_patients_1_timestep(colonized, wards, new_arrivals, weights, total_
         np.random.seed(24798)
 
         #Generate the colonized_ward_arrival dataset
-        colonized = np.random.binomial(n=1,p=0.4,size=(20,1))
+        colonized = np.random.binomial(n=1,p=0.4,size=(20,1)) == 1
         wards = np.random.randint(1, 4, size = 20)
-        new_arrivals = np.random.binomial(n=1,p=0.1,size=(20,1))
+        new_arrivals = np.random.binomial(n=1,p=0.1,size=(20,1)) == 1
         weights = np.tile(1, (20,1))
 
         #Generate the total patients per ward
@@ -195,12 +202,7 @@ def progress_patients_1_timestep(colonized, wards, new_arrivals, weights, total_
                                                    new_arrivals=new_arrivals[ward_index],
                                                    total_patients=total_patients,
                                                    parameters=parameters,
-                                                   weights=weights[ward_index],
-                                                   **kwargs)
-
-        # Check if we are propagating probability or cases
-        if method == "cases":
-            colonized_ward = np.random.binomial(n=np.ones(colonized_ward.shape, dtype="int"), p=colonized_ward)
+                                                   weights=weights[ward_index],)
 
         # Add to next steps
         next_step_colonized = np.append(next_step_colonized, colonized_ward, axis=0)
@@ -210,8 +212,7 @@ def progress_patients_1_timestep(colonized, wards, new_arrivals, weights, total_
 
 
 def progress_discrete_model_through_days(colonized, wards, new_arrivals, weights, total_patients_per_ward,
-                                         parameters, day_progression_function=progress_patients_1_timestep,
-                                         **kwargs):
+                                         parameters, day_progression_function, ward_progression_function):
     """
         `progress_discrete_model_through_days` progresses all patients in all wards from 1 timestep to the next
         across all days in a range.  The function is defined to progress each patient `i` of each ward `w` by
@@ -271,30 +272,33 @@ def progress_discrete_model_through_days(colonized, wards, new_arrivals, weights
             total_patients_per_ward = np.append(total_patients_per_ward, total_patients_per_ward_temp, axis = 0)
 
         #Create the parameters
-        parameters = dict()
+        parameters = numba.typed.Dict() # dict()
         parameters["alpha"] = np.linspace(0.1, 0.2, num_parameters)
         parameters["beta"] = np.linspace(0.2, 0.3, num_parameters)
         parameters["gamma"] = np.linspace(0.2, 0.3, num_parameters)
 
         #Colonize nextstep
         next_step, wards = progress_discrete_model_through_days(colonized, wards, new_arrivals,
-            weights, total_patients_per_ward, parameters, ward_progression_function=progress_patients_probability_ward_1_timestep)
+            weights, total_patients_per_ward, parameters, )
         ```
     """
-
+    #FIXME: Finish here
     # Number of days to run the simulation for
     ndays = colonized.shape[0]
 
-    # Get
+    model_colonized = np.empty(shape= colonized.shape + (ndays,))
 
+    # Loop through each of the days
     for day in range(ndays):
+
         # Total number of patients
         total_patients = total_patients_per_ward[total_patients_per_ward[:, 0] == day][:, 1:2]
 
         # Run a day of the function
-        day_progression_function(colonized=colonized[day, :, :],
-                                 wards=wards[day, :],
-                                 new_arrivals=new_arrivals[day, :, :],
-                                 weights=weights[day, :, :],
-                                 total_patients_per_ward=total_patients,
-                                 parameters=parameters, **kwargs)
+        model_colonized = day_progression_function(colonized=colonized[day, :, :],
+                                                   wards=wards[day, :],
+                                                   new_arrivals=new_arrivals[day, :, :],
+                                                   weights=weights[day, :, :],
+                                                   total_patients_per_ward=total_patients,
+                                                   parameters=parameters,
+                                                   ward_progression_function=ward_progression_function)

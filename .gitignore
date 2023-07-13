@@ -9,7 +9,7 @@ julia_identifiability_test/
 *.Rhistory
 *.Rdata
 data_cleaning/data_files/*
-
+data_cleaning/*
 
 #Keep requirements
 !requirements.txt
