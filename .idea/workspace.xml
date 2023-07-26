@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ab57fe4-e969-456b-bff2-72f4fa72eb58" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Tutorial_Tal_trajectory.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/iAKF.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tutorial_simulate_trajectories.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Tutorial_simulate_trajectories.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progress_patients.py" beforeDir="false" afterPath="$PROJECT_DIR$/progress_patients.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
