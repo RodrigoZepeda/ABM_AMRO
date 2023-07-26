@@ -3,8 +3,11 @@ import numba
 from numba import njit
 import pandas as pd
 
+
+# Single trajectory 2 minutes
+# Get values from Tal
 # Using Google's style https://google.github.io/styleguide/pyguide.html
-@njit
+@njit(cache=False)
 def progress_patients_probability_ward_1_timestep(colonized, new_arrivals, total_patients, parameters, weights):
     """
         progress_patients_probability_ward_1_timestep progresses all patients in a ward from 1 timestep to the next
@@ -78,26 +81,22 @@ def progress_patients_probability_ward_1_timestep(colonized, new_arrivals, total
 
     # Calculate colonizations attributable to ward:
     # ward_attributable = (1- alpha)*C[i,d-1]/k + (1 - C[i, d - 1]/k)*transmission_rate
-    ward_attributable = np.multiply(weighted_colonized, 1 - parameters["alpha"])
-    ward_attributable += np.multiply(1 - weighted_colonized, force_of_infection)
-
-    # Calculate the ones attributable to new arrivals
-    # arrival_attributable = gamma*h[i,d]
-    arrival_attributable = np.multiply(new_arrivals, parameters["gamma"])
+    ward_attributable = np.multiply(weighted_colonized, 1 - parameters["alpha"]) + np.multiply(1 - weighted_colonized,
+                                                                                               force_of_infection)
 
     # Compute the new colonized and return
-    # new_colonized = ward_attributable + arrival_attributable
-    colonized_probability = np.multiply(ward_attributable, 1 - new_arrivals) + arrival_attributable
+    # new_colonized = ward_attributable + gamma*h[i,d]
+    colonized_probability = np.multiply(ward_attributable, 1 - new_arrivals) + np.multiply(new_arrivals,
+                                                                                           parameters["gamma"])
 
     # Calculate the number of colonized individuals from the binomial model
     # https://stackoverflow.com/questions/66468953/numba-compatibility-with-numpy-random-binomial
-    random_probability = np.random.uniform(low=0, high=1, size=colonized_probability.shape)
-    new_colonized = random_probability < colonized_probability
+    new_colonized = np.random.uniform(low=0, high=1, size=colonized_probability.shape) < colonized_probability
 
     return new_colonized
 
 
-@njit
+@njit(cache=False, parallel=True)
 def progress_patients_1_timestep(colonized, wards, new_arrivals, weights, total_patients_per_ward, parameters,
                                  ward_progression_function):
     """
@@ -184,34 +183,33 @@ def progress_patients_1_timestep(colonized, wards, new_arrivals, weights, total_
 
     # Get unique ward values for the day
     active_wards = np.unique(wards)
+    active_wards = active_wards[active_wards > 0]
 
     # Create empty array to concatenate results into
-    next_step_colonized = np.empty(shape=(0, colonized.shape[1]))
-    # next_step_wards = np.empty(shape=0)
+    next_step_colonized = np.zeros(shape=colonized.shape)
 
     # Loop through the wards that have cases during the period
-    for ward in active_wards:
+    for w in numba.prange(len(active_wards)):
+        # Assign ward
+        ward = active_wards[w]
+
         # Select the specific ward
         ward_index = (wards == ward)
-
-        # Get the ward's size
-        total_patients = total_patients_per_ward[total_patients_per_ward[:, 1] == ward, 0]
 
         # Advance the specific ward
         colonized_ward = ward_progression_function(colonized=colonized[ward_index],
                                                    new_arrivals=new_arrivals[ward_index],
-                                                   total_patients=total_patients,
+                                                   total_patients=total_patients_per_ward[total_patients_per_ward[:, 1] == ward, 0],
                                                    parameters=parameters,
                                                    weights=weights[ward_index], )
 
         # Add to next steps
-        next_step_colonized = np.append(next_step_colonized, colonized_ward, axis=0)
-        # next_step_wards = np.append(next_step_wards, np.array(ward).repeat(colonized_ward.shape[0]), axis=0)
+        next_step_colonized[ward_index] = colonized_ward
 
     return next_step_colonized
 
 
-@njit
+@njit(cache=False)
 def simulate_discrete_model_internal_one(initial_colonized, wards, new_arrivals, weights, total_patients_per_ward,
                                          parameters, day_progression_function, ward_progression_function):
     """
@@ -331,30 +329,29 @@ def simulate_discrete_model_internal_one(initial_colonized, wards, new_arrivals,
 
     total_days = new_arrivals.shape[0]
 
-    model_colonized = np.empty(shape=((total_days,) + initial_colonized.shape))
+    model_colonized = np.zeros(shape=((total_days,) + initial_colonized.shape))
     model_colonized[0, :] = initial_colonized
 
     # Loop through each of the days
     for day in range(1, total_days):
-        # Total number of patients
-        total_patients = total_patients_per_ward[total_patients_per_ward[:, 0] == day][:, 1:3]
 
         # Run a day of the function
+        # FIXME: Add here the check for wards > 0 and not in the ward?
         model_colonized[day, :, :] = day_progression_function(colonized=model_colonized[day - 1, :, :],
                                                               wards=wards[day, :],
                                                               new_arrivals=new_arrivals[day, :, :],
                                                               weights=weights[day, :, :],
-                                                              total_patients_per_ward=total_patients,
+                                                              total_patients_per_ward=total_patients_per_ward[total_patients_per_ward[:, 0] == day][:, 1:3],
                                                               parameters=parameters,
                                                               ward_progression_function=ward_progression_function)
 
     return model_colonized
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=False)
 def simulate_discrete_model_internal_multiple(initial_colonized, wards, new_arrivals, weights, total_patients_per_ward,
                                               parameters, day_progression_function, ward_progression_function,
-                                              nsim=100):
+                                              nsim):
     """
     `simulate_discrete_model_internal_one` progresses all patients in all wards from 1 timestep to the next
     across all days in a range.  The function is defined to progress each patient `i` of each ward `w` by
@@ -471,7 +468,7 @@ def simulate_discrete_model_internal_multiple(initial_colonized, wards, new_arri
     ```
     """
     # Loop through simulations
-    simulations = np.empty(shape=(nsim,) + new_arrivals.shape)
+    simulations = np.zeros(shape=(nsim,) + new_arrivals.shape)
     for n in numba.prange(nsim):
         simulations[n, :, :, :] = simulate_discrete_model_internal_one(initial_colonized, wards, new_arrivals,
                                                                        weights, total_patients_per_ward, parameters,
@@ -561,6 +558,57 @@ def simulate_discrete_model(initial_colonized, wards, total_patients_per_ward, p
     model_simulation = simulate_discrete_model(initial_colonized, wards, total_patients_per_ward, parameters, nsim,
                                                 new_arrivals, weights, progress_patients_1_timestep,
                                                 progress_patients_probability_ward_1_timestep)
+
+    #MODEL WHERE PATIENTS ARE NOT STILL THERE BECAUSE THEY HAVEN'T ARRIVED
+    np.random.seed(3245)
+    nsim = 100
+    num_obs = 10   #Number of patients
+    num_days = 3  #Run model by 5 days
+    num_wards = 4 #Total number of wards
+    num_parameters = 10 #Total number of parameters to run at same time
+
+    initial_colonized = np.random.binomial(n=1,p=0.4,size=round(num_obs/2)) == 1
+    initial_colonized = np.concatenate([initial_colonized, np.repeat(False, num_obs - len(initial_colonized))])
+
+    total_patients_per_ward = np.empty((0, 3), dtype = "int")
+
+    #Create the new arrivals for day 2
+    new_arrivals = np.zeros((num_days, num_obs))
+    new_arrivals[1,round(num_obs/2):num_obs] = np.random.binomial(1, 0.5, num_obs -round(num_obs/2))
+    new_arrivals[2,round(num_obs/2):num_obs] = new_arrivals[1, round(num_obs / 2):num_obs] != 1
+
+    #Generate the ward data
+    wards = np.zeros((num_days, num_obs))
+    wards[0,0:round(num_obs/2)] = np.random.randint(1, 4, size = round(num_obs/2))
+    wards[1,0:round(num_obs/2)] = np.random.randint(1, 4, size = round(num_obs/2))
+    wards[2,2:round(num_obs/2)] = np.random.randint(1, 4, size = round(num_obs/2) - 2)
+    wards[1,new_arrivals[1,:] == 1] = np.random.randint(1, 4, size = sum(new_arrivals[1,:] == 1))
+    wards[2,new_arrivals[2,:] == 1] = np.random.randint(1, 4, size = sum(new_arrivals[2,:] == 1))
+
+    #Notice that ward 0 is actually no people in that ward as they left or haven't arrived yet
+
+    for day in range(num_days):
+        minward = num_obs
+        maxward = 3*num_obs
+        total_patients_per_ward_temp = np.random.randint(minward, maxward, size = num_wards)
+        total_patients_per_ward_temp = np.column_stack((np.repeat(day, num_wards),
+                total_patients_per_ward_temp, np.arange(1, num_wards + 1)))
+        total_patients_per_ward = np.append(total_patients_per_ward, total_patients_per_ward_temp, axis = 0)
+
+    #Create weights
+    weights = np.tile(1, new_arrivals.shape)
+
+    #Create the parameters
+    parameters = numba.typed.Dict() # dict()
+    parameters["alpha"] = np.linspace(0.1, 0.2, num_parameters)
+    parameters["beta"] = np.linspace(0.2, 0.3, num_parameters)
+    parameters["gamma"] = np.linspace(0.2, 0.3, num_parameters)
+
+
+    #Colonize nextstep
+    model_simulation = simulate_discrete_model(initial_colonized, wards, total_patients_per_ward, parameters, nsim,
+                                                new_arrivals, weights, progress_patients_1_timestep,
+                                                progress_patients_probability_ward_1_timestep)
     ```
     """
 
@@ -630,25 +678,31 @@ def simulate_discrete_model(initial_colonized, wards, total_patients_per_ward, p
         raise ValueError(f"`new_arrivals` has {new_arrivals.shape[1]} individuals while" +
                          f" `initial_colonized` only has {initial_colonized.shape[0]}.")
 
-    return simulate_discrete_model_internal_multiple(initial_colonized, wards, new_arrivals, weights,
-                                                     total_patients_per_ward, parameters, day_progression_function,
-                                                     ward_progression_function, nsim)
+    return simulate_discrete_model_internal_multiple(initial_colonized=initial_colonized, wards=wards,
+                                                     new_arrivals=new_arrivals, weights=weights,
+                                                     total_patients_per_ward=total_patients_per_ward,
+                                                     parameters=parameters,
+                                                     day_progression_function=day_progression_function,
+                                                     ward_progression_function=ward_progression_function, nsim=nsim)
+
 
 # This one has no decorator of njit as it is a wrapper for `simulate_discrete_model_internal_multiple`
 def get_totals(model_simulation, parameters=None, nround=3):
     """
+    :param nround: Digits to round off the parameters
+    :param parameters: Dictionary of parameters involved
     :param model_simulation: An array from `simulate_discrete_model`
     return A pandas DataFrame of the totals by parameter and simulation group
     """
 
-    total_positives = np.sum(model_simulation, axis = 2)
+    total_positives = np.sum(model_simulation, axis=2)
 
     df = pd.concat([pd.DataFrame(arr) for arr in total_positives], keys=np.arange(len(total_positives)))
     df = df.add_prefix('parameters_')
     df = df.reset_index()
     df = df.rename(columns={"level_0": "simulation"})
     df = df.rename(columns={"level_1": "day"})
-    df = pd.wide_to_long(df, i=["simulation","day"],  stubnames="parameters_", j = "pars").reset_index()
+    df = pd.wide_to_long(df, i=["simulation", "day"], stubnames="parameters_", j="pars").reset_index()
     df = df.rename(columns={"parameters_": "colonized"})
 
     if parameters is not None:
@@ -657,12 +711,12 @@ def get_totals(model_simulation, parameters=None, nround=3):
         df_params = pd.DataFrame(dict(parameters))
         cols = df_params.columns.values
         for val in cols:
-            df_params[val] = val + ": " +  np.round(df_params[val], nround).astype(str)
+            df_params[val] = val + ": " + np.round(df_params[val], nround).astype(str)
 
         df_params = df_params.reset_index().rename(columns={"index": "pars"})
 
         df_params['parameters'] = df_params[cols].apply(lambda row: '|'.join(row.values), axis=1)
-        df_params = df_params[["pars","parameters"]]
-        df = df.join(df_params.set_index('pars'), on = "pars")
+        df_params = df_params[["pars", "parameters"]]
+        df = df.join(df_params.set_index('pars'), on="pars")
 
     return df
