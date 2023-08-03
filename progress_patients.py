@@ -4,6 +4,8 @@ from numba import njit
 import pandas as pd
 
 
+# from numba.pycc import CC
+
 # Single trajectory 2 minutes
 # Get values from Tal
 # Using Google's style https://google.github.io/styleguide/pyguide.html
@@ -77,17 +79,17 @@ def progress_patients_probability_ward_1_timestep(colonized, new_arrivals, total
 
     # Calculate the ward's force of infection
     # force_of_infection = beta/N*sum(C_[:,d-1]/k)
-    force_of_infection = np.multiply(parameters["beta"] / total_patients, np.sum(weighted_colonized, axis=0))
+    force_of_infection = np.multiply(parameters[:, 1] / total_patients, np.sum(weighted_colonized, axis=0))
 
     # Calculate colonizations attributable to ward:
     # ward_attributable = (1- alpha)*C[i,d-1]/k + (1 - C[i, d - 1]/k)*transmission_rate
-    ward_attributable = np.multiply(weighted_colonized, 1 - parameters["alpha"]) + np.multiply(1 - weighted_colonized,
-                                                                                               force_of_infection)
+    ward_attributable = np.multiply(weighted_colonized, 1 - parameters[:, 0]) + np.multiply(1 - weighted_colonized,
+                                                                                            force_of_infection)
 
     # Compute the new colonized and return
     # new_colonized = ward_attributable + gamma*h[i,d]
     colonized_probability = np.multiply(ward_attributable, 1 - new_arrivals) + np.multiply(new_arrivals,
-                                                                                           parameters["gamma"])
+                                                                                           parameters[:, 2])
 
     # Calculate the number of colonized individuals from the binomial model
     # https://stackoverflow.com/questions/66468953/numba-compatibility-with-numpy-random-binomial
@@ -116,7 +118,7 @@ def progress_patients_1_timestep(colonized, wards, new_arrivals, weights, total_
             - 1st column: `N` total number of patients
             - 2nd column: `ward` The ward for which the number of patients was computed
         :param parameters: Dict of arrays with parameters of the `ward_progression_function` model.
-        :param method: Method for propagating uncertainty either probability propagation or cases. 
+        :param method: Method for propagating uncertainty either probability propagation or cases.
         :param ward_progression_function: Function describing how to progress each ward
         :return: array of colonized individuals by day d. Individuals are rows. Returns multiple
             columns if you are evaluating several parameters at once.
@@ -183,28 +185,28 @@ def progress_patients_1_timestep(colonized, wards, new_arrivals, weights, total_
 
     # Get unique ward values for the day
     active_wards = np.unique(wards)
-    active_wards = active_wards[active_wards > 0]
 
     # Create empty array to concatenate results into
     next_step_colonized = np.zeros(shape=colonized.shape)
 
     # Loop through the wards that have cases during the period
     for w in numba.prange(len(active_wards)):
-        # Assign ward
-        ward = active_wards[w]
 
-        # Select the specific ward
-        ward_index = (wards == ward)
+        if active_wards[w] > 0:
 
-        # Advance the specific ward
-        colonized_ward = ward_progression_function(colonized=colonized[ward_index],
-                                                   new_arrivals=new_arrivals[ward_index],
-                                                   total_patients=total_patients_per_ward[total_patients_per_ward[:, 1] == ward, 0],
-                                                   parameters=parameters,
-                                                   weights=weights[ward_index], )
+            # Select the specific ward
+            ward_index = (wards == active_wards[w])
 
-        # Add to next steps
-        next_step_colonized[ward_index] = colonized_ward
+            # Advance the specific ward
+            colonized_ward = ward_progression_function(colonized=colonized[ward_index],
+                                                       new_arrivals=new_arrivals[ward_index],
+                                                       total_patients=total_patients_per_ward[
+                                                           total_patients_per_ward[:, 1] == active_wards[w], 0],
+                                                       parameters=parameters,
+                                                       weights=weights[ward_index], )
+
+            # Add to next steps
+            next_step_colonized[ward_index] = colonized_ward
 
     return next_step_colonized
 
@@ -335,13 +337,13 @@ def simulate_discrete_model_internal_one(initial_colonized, wards, new_arrivals,
     # Loop through each of the days
     for day in range(1, total_days):
 
-        # Run a day of the function
-        # FIXME: Add here the check for wards > 0 and not in the ward?
         model_colonized[day, :, :] = day_progression_function(colonized=model_colonized[day - 1, :, :],
                                                               wards=wards[day, :],
                                                               new_arrivals=new_arrivals[day, :, :],
                                                               weights=weights[day, :, :],
-                                                              total_patients_per_ward=total_patients_per_ward[total_patients_per_ward[:, 0] == day][:, 1:3],
+                                                              total_patients_per_ward=total_patients_per_ward[
+                                                                                          total_patients_per_ward[:,
+                                                                                          0] == day][:, 1:3],
                                                               parameters=parameters,
                                                               ward_progression_function=ward_progression_function)
 
@@ -612,20 +614,21 @@ def simulate_discrete_model(initial_colonized, wards, total_patients_per_ward, p
     ```
     """
 
+    num_parameters = parameters.shape[1]
     # Check parameters have same dimension
-    parameter_values = list(parameters.items())
-    num_parameters = len(parameter_values[0][1])
-    incorrect_params = [key for key in list(parameters) if len(parameters[key]) != num_parameters]
-    if len(incorrect_params) > 0:
-        raise ValueError(f"The following parameters have different dimensions: " +
-                         f"'{parameter_values[0][0]}' and {incorrect_params}.")
+    # parameter_values = list(parameters.items())
+    # num_parameters = len(parameter_values[0][1])
+    # incorrect_params = [key for key in list(parameters) if len(parameters[key]) != num_parameters]
+    # if len(incorrect_params) > 0:
+    #     raise ValueError(f"The following parameters have different dimensions: " +
+    #                      f"'{parameter_values[0][0]}' and {incorrect_params}.")
 
     # Check that the ward and patient days are correctly specified
     total_days = wards.shape[0]
-    day_patients = len(np.unique(total_patients_per_ward[:, 0]))
-    if len(incorrect_params) > 0:
-        raise ValueError(f"`wards` have: {total_days} days (1st column) and `total_patients_per_ward` have " +
-                         f"{day_patients} days (1st column).")
+    # day_patients = len(np.unique(total_patients_per_ward[:, 0]))
+    # if day_patients != (total_days + 1):
+    #     raise ValueError(f"`wards` have: {total_days} days (1st column) and `total_patients_per_ward` have " +
+    #                      f"{day_patients} days (1st column).")
 
     # Check that we are giving at least two individuals:
     num_obs = initial_colonized.shape[0]
