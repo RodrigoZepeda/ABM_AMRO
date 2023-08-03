@@ -24,5 +24,6 @@ setup(
     author_email='rodrigo.zepeda@columbia.edu',
     description='Agent Based Model for Antimicrobial Resistance',
     ext_modules=ext_modules,
+    setup_requires=["numpy"],  
     install_requires=['pybind11', 'numpy'],  # external packages as dependencies
 )
