@@ -5,6 +5,13 @@ julia_identifiability_test/
 *.csv
 *.json
 *.txt
+*.rds
+*.Rhistory
+*.Rdata
+data_cleaning/data_files/*
+data_cleaning/*
+.ipynb_checkpoints/
+amro.egg-info/
 
 #Keep requirements
 !requirements.txt
@@ -14,6 +21,7 @@ julia_identifiability_test/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.idea/
 *.py[cod]
 *$py.class
 
