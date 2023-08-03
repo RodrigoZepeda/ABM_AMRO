@@ -10,6 +10,8 @@ julia_identifiability_test/
 *.Rdata
 data_cleaning/data_files/*
 data_cleaning/*
+.ipynb_checkpoints/
+amro.egg-info/
 
 #Keep requirements
 !requirements.txt
