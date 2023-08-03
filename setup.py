@@ -1,11 +1,12 @@
 import numpy
-from distutils.core import setup, Extension
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+from setuptools import setup
 
 # OSX build with CC=/usr/local/opt/llvm/bin/clang python setup.py build_ext -i
 # after installing brew install llvm libomp
-cpp_args = ['-std=c++14', '-O3', '-Wall']
+#cpp_args = ['-std=c++14', '-O3', '-Wall']
 ext_modules = [
-    Extension(
+    Pybind11Extension(
         'amro',
         ['abm_wards.cpp', 'amro.cpp'],
         include_dirs=["armadillo_12_6_1",
@@ -13,7 +14,7 @@ ext_modules = [
                       numpy.get_include(),
                       "carma_0_6_7"],
         language='c++',
-        extra_compile_args=cpp_args,
+        #extra_compile_args=cpp_args,
     ),
 ]
 
@@ -25,6 +26,6 @@ setup(
     author_email='rodrigo.zepeda@columbia.edu',
     description='Agent Based Model for Antimicrobial Resistance',
     ext_modules=ext_modules,
-    setup_requires=['numpy','pybind11'],
-    install_requires=['pybind11', 'numpy'],  # external packages as dependencies
+    cmdclass={"build_ext": build_ext},
+    python_requires=">=3.9",
 )
