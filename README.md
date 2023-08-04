@@ -2,6 +2,8 @@
 
 Agent Based Model repository for antimicrobial resistance
 
+![Figure of a collection of agents interacting](figures/abm_amro.svg)
+
 ## Setup
 
 You can install the package via `pip`:
