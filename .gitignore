@@ -12,6 +12,7 @@ data_cleaning/data_files/*
 data_cleaning/*
 .ipynb_checkpoints/
 amro.egg-info/
+.pytest_cache
 
 #Keep requirements
 !requirements.txt

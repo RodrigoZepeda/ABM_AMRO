@@ -10,7 +10,7 @@ __version__ = "0.0.2"
 ext_modules = [
     Pybind11Extension(
         'amro',
-        ['src/abm_wards.cpp', 'src/amro.cpp'],
+        ['src/amro/abm_wards.cpp', 'src/amro/amro.cpp'],
         define_macros = [('VERSION_INFO', __version__)],
         include_dirs=["armadillo_12_6_1",
                       'pybind11/include',
