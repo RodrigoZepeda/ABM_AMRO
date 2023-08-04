@@ -1,6 +1,5 @@
 import numpy
 import amro
-
 def test_gamma_equals_1_all_arrivals_infected():
     #Gamma = 1 should infect all new arrivals
     total_patients = numpy.array([
