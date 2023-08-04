@@ -1,12 +1,16 @@
 import numpy
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
+import sys
 
 __version__ = "0.0.2"
 
 # OSX build with CC=/usr/local/opt/llvm/bin/clang python setup.py build_ext -i
 # after installing brew install llvm libomp
-#cpp_args = ['-std=c++14', '-O3', '-Wall']
+cpp_args = ['-fopenmp']
+if sys.platform == "darwin":
+    cpp_args.insert(0,"-Xpreprocessor") 
+
 ext_modules = [
     Pybind11Extension(
         'amro',
@@ -17,7 +21,8 @@ ext_modules = [
                       numpy.get_include(),
                       "carma_0_6_7"],
         language='c++',
-        #extra_compile_args=cpp_args,
+        extra_compile_args=cpp_args,
+        extra_link_args=["-lgomp"],
     ),
 ]
 

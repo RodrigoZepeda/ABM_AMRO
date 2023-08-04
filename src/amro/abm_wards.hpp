@@ -1,5 +1,6 @@
 #include <carma>
 #include <armadillo>
+#include <omp.h>
 
 arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
                                                         const double& total_patients,
