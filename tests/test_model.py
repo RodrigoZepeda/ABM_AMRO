@@ -126,3 +126,51 @@ def test_seed_different():
     model_1 = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters, 1)
     model_2 = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters, 10)
     assert ~numpy.all(model_1 == model_2)
+
+def test_seed_different_across_threads():
+    total_patients = numpy.array([
+        [0],
+        [1],
+        [20],
+    ]).transpose()
+    initial_colonized = numpy.array([[0, 1, 0, 0, 0, 0]]).transpose()
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],  # Day
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
+        [52, 53, 17, 200, 87, 99, 52, 53, 17, 20],  # MRN
+        [1, 1, 0, 0, 1, 0, 0, 1, 1, 0],  # New_arrival
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Weight
+        [6, 7, 8, -1, -1, -1, -1, -1, -1, 1],  # Next day position
+    ]).transpose()
+    parameters = numpy.array([
+        [0.1],  # Alpha
+        [1.0],  # Beta
+        [0.5],  # Gamma
+    ]).transpose()
+    model_1 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 10, 1, 4)
+    model_2 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 10, 2, 4)
+    assert ~numpy.all(model_1 == model_2)
+
+""" def test_seed_equal_across_threads():
+    total_patients = numpy.array([
+        [0],
+        [1],
+        [20],
+    ]).transpose()
+    initial_colonized = numpy.array([[0, 1, 0, 0, 0, 0]]).transpose()
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],  # Day
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
+        [52, 53, 17, 200, 87, 99, 52, 53, 17, 20],  # MRN
+        [1, 1, 0, 0, 1, 0, 0, 1, 1, 0],  # New_arrival
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Weight
+        [6, 7, 8, -1, -1, -1, -1, -1, -1, 1],  # Next day position
+    ]).transpose()
+    parameters = numpy.array([
+        [0.1],  # Alpha
+        [1.0],  # Beta
+        [0.5],  # Gamma
+    ]).transpose()
+    model_1 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 2, 2, 4)
+    model_2 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 10, 2, 4)
+    assert numpy.all(model_1 == model_2)   """

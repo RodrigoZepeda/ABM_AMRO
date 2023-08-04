@@ -216,7 +216,7 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
   #pragma omp parallel for schedule(static) private(arma_seed)
   for (arma::uword sim = 0; sim < n; ++sim) {
     // Generate a different seed for each thread using the thread index and the global seed
-    unsigned int thread_seed = arma_seed + sim + omp_get_thread_num();
+    unsigned int thread_seed = arma_seed + sim;
 
     // Simulate one discrete model and store the result in the cube
     simulation_results.slice(sim) = simulate_discrete_model_internal_one(
