@@ -7,12 +7,12 @@ Agent Based Model repository for antimicrobial resistance
 Install the package via `pip`:
 
 ```bash
-pip install git+https://github.com/RodrigoZepeda/ABM_Identifiability_python
+pip install git+https://github.com/RodrigoZepeda/ABM_AMRO
 ```
 
 To install the development version:
 ```bash
-pip install git+https://github.com/RodrigoZepeda/ABM_Identifiability_python@dev
+pip install git+https://github.com/RodrigoZepeda/ABM_AMRO@dev
 ```
 
 ## Tutorials 
