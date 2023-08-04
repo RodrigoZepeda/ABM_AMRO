@@ -1,7 +1,9 @@
 import numpy
 import amro
+
+
 def test_gamma_equals_1_all_arrivals_infected():
-    #Gamma = 1 should infect all new arrivals
+    # Gamma = 1 should infect all new arrivals
     total_patients = numpy.array([
         [0],
         [1],
@@ -21,5 +23,6 @@ def test_gamma_equals_1_all_arrivals_infected():
         [0.2],  # Beta
         [1.0],  # Gamma
     ]).transpose()
-    model_run = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters, 10)
-    assert numpy.all(model_run[:,3] == model_run[:,6])
+    model_run = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters,
+                                                          10)
+    assert numpy.all(model_run[:, 3] == model_run[:, 6])
