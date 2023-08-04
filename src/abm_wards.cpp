@@ -1,14 +1,5 @@
 #include <carma>
 #include <armadillo>
-#include <omp.h>
-
-#ifdef _OPENMP
-    #include <omp.h>
-#else
-    #define omp_get_num_threads() 0
-    inline void omp_set_num_threads(int num_threads) { static_cast<void>(num_threads); }
-    #define omp_get_thread_num() 0
-#endif
 
 // Example
 // --------------
@@ -206,18 +197,14 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
                                             unsigned int arma_seed,
                                             const unsigned int num_threads) {
 
-  omp_set_num_threads(num_threads);
 
   arma::cube simulation_results(ward_matrix.n_rows,
                                 ward_matrix.n_cols + initial_colonized_probability.n_cols,
                                 n, arma::fill::zeros);
 
-  // Parallelize the loop using OpenMP and set a different seed for each thread
-  #pragma omp parallel for schedule(static) private(arma_seed)
-
   for (arma::uword sim = 0; sim < n; ++sim) {
     // Generate a different seed for each thread using the thread index and the global seed
-    unsigned int thread_seed = arma_seed + omp_get_thread_num();
+    unsigned int thread_seed = arma_seed + sim;
 
     // Simulate one discrete model and store the result in the cube
     simulation_results.slice(sim) = simulate_discrete_model_internal_one(
