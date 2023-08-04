@@ -213,3 +213,49 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
 
   return simulation_results;
 }
+
+
+// [[Rcpp::export]]
+arma::mat total_positive(const arma::mat& model_colonized){
+
+  //Column for days in ward_matrix
+  const arma::uword day_column = 0;
+  const arma::uword colonized_col_init = 6;
+  const arma::uword colonized_col_end = model_colonized.n_cols - 1;
+
+  //Get the total number of days
+  arma::uword total_days = arma::max(model_colonized.col(day_column)) + 1;
+
+  arma::mat model_positive(total_days, colonized_col_end - colonized_col_init + 1);
+
+  //Loop through days and sum
+  for(arma::uword day = 0; day < total_days; ++day) {
+    arma::mat subcol = model_colonized.rows(arma::find(model_colonized.col(day_column) == day));
+    model_positive.row(day) = arma::sum(subcol.cols(colonized_col_init, colonized_col_end), 0);
+
+  }
+
+  return model_positive;
+
+}
+
+// [[Rcpp::export]]
+arma::mat summary_of_total_positive(const arma::mat& model_colonized,
+                                      const arma::vec quantiles){
+
+  //Get the total values of colonized
+  arma::mat model_positive = total_positive(model_colonized);
+
+  //Create matrix of quantiles, mean and sd
+  arma::mat positive_summary(model_positive.n_rows, quantiles.n_elem + 3);
+
+  for(arma::uword day = 0; day < model_positive.n_rows; ++day) {
+    positive_summary(day, 0) = day;
+  }
+  positive_summary.col(1) = arma::mean(model_positive, 1);
+  positive_summary.col(2) = arma::stddev(model_positive, 1, 1);
+  positive_summary.submat(0, 3, model_positive.n_rows - 1,
+                          positive_summary.n_cols - 1) = arma::quantile(model_positive, quantiles, 1);
+
+  return positive_summary;
+}
