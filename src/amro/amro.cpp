@@ -2,6 +2,7 @@
 #include "abm_wards.hpp"
 #include <carma>
 #include <armadillo>
+#include <omp.h>
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
