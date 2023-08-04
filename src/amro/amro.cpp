@@ -44,6 +44,15 @@ PYBIND11_MODULE(amro, m) {
           "arma_seed"_a=6,
           "num_threads"_a=7);
 
+    m.def("total_positive", &total_positive,
+        "A function for calculating the total positive cases per simulation per day",
+          "model_colonized"_a=1);
+
+    m.def("summary_of_total_positive", &summary_of_total_positive,
+        "A function for calculating the mean, sd and quantiles of total positive cases per simulation per day",
+          "model_colonized"_a=1,
+          "quantiles"_a=2);
+
     #ifdef VERSION_INFO
         m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
     #else

@@ -22,3 +22,8 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
                                             const arma::uword n,
                                             unsigned int arma_seed,
                                             const unsigned int num_threads);
+
+arma::mat total_positive(const arma::mat& model_colonized);
+
+arma::mat summary_of_total_positive(const arma::mat& model_colonized,
+                                      const arma::vec quantiles);
