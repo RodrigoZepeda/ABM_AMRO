@@ -10,12 +10,19 @@ julia_identifiability_test/
 *.Rdata
 data_cleaning/data_files/*
 data_cleaning/*
+*.ipynb
 .ipynb_checkpoints/
 amro.egg-info/
 .pytest_cache
+wards.csv
+patients.csv
+test.R
+
 
 #Keep requirements
 !requirements.txt
+!Tutorial_Tal_trajectory.ipynb
+
 
 #Other trash
 .DS_Store
