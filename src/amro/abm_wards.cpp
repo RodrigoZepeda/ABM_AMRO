@@ -230,6 +230,7 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
     // Generate a different seed for each thread using the thread index and the global seed
     unsigned int thread_seed = arma_seed + sim;
 
+
     //printf("Starting simulation in thread %d", omp_get_num_threads());
     // Simulate one discrete model and store the result in the cube
     simulation_results.slice(sim) = simulate_discrete_model_internal_one(
@@ -237,6 +238,7 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
 
     #pragma omp critical
         bar.update();
+
   }
 
   return simulation_results;

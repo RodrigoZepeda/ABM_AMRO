@@ -17,6 +17,7 @@ To install the development version:
 pip install git+https://github.com/RodrigoZepeda/ABM_AMRO@dev
 ```
 
+
 You can also download the repository and build locally with:
 ```bash
 python setup.py build_ext -i
@@ -41,6 +42,7 @@ apt install libomp-dev
 ```
 
 #### Windows (version >= 8 and 64 bit)
+
 
 > :warning: I don't have Windows. I haven't tested it on Windows then. 
 
