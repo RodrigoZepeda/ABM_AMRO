@@ -17,6 +17,11 @@ To install the development version:
 pip install git+https://github.com/RodrigoZepeda/ABM_AMRO@dev
 ```
 
+You can also download the repository and build locally with:
+```bash
+python setup.py build_ext -i
+```
+
 ### Troubleshooting installation
 
 #### OSX
