@@ -17,6 +17,7 @@ ext_modules = [
         ['src/amro/abm_wards.cpp', 'src/amro/amro.cpp'],
         define_macros = [('VERSION_INFO', __version__)],
         include_dirs=["armadillo_12_6_1",
+                      "progressbar/include",
                       'pybind11/include',
                       numpy.get_include(),
                       "carma_0_6_7"],
