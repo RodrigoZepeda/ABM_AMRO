@@ -151,12 +151,12 @@ def test_seed_different_across_threads():
         [6, 7, 8, -1, -1, -1, -1, -1, -1, 1],  # Next day position
     ]).transpose()
     parameters = numpy.array([
-        [0.1, 0.2, 0.3],  # Alpha
-        [0.2, 0.4, 0.5],  # Beta
-        [0.5, 0.6, 0.1],  # Gamma
+        [0.1],  # Alpha
+        [1.0],  # Beta
+        [0.5],  # Gamma
     ]).transpose()
-    model_1 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 100, 1,
-                                                    10)
+    model_1 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 10, 1,
+                                                    4)
     model_2 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 10, 2,
                                                     4)
     assert ~numpy.all(model_1 == model_2)
