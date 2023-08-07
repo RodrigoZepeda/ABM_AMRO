@@ -2,6 +2,7 @@
 #include <armadillo>
 #include <cstdio>
 #include <progressbar.hpp>
+#include <pybind11/iostream.h>
 
 #ifdef _OPENMP
     #include <omp.h>
@@ -210,15 +211,16 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
 
   omp_set_num_threads(num_threads);
 
-  printf("Using `num_threads` = %d threads to run `n` = %d independent simulations,\n"
-         "each one being a block of `nrow(parameters)` %d different parameters\n"
-         "for a total of `nrow(parameters)*n` = %d distinct trajectories.\n",
-          omp_get_max_threads(),
-          static_cast<int>(n),
-          static_cast<int>(initial_colonized_probability.n_cols),
-          static_cast<int>(initial_colonized_probability.n_cols * n));
+  py::print("Using `num_threads` = ", omp_get_max_threads(),
+            "threads to run `n` = ", static_cast<int>(n),
+            "independent simulations,\n each one being a block of `nrow(parameters)` = ",
+            static_cast<int>(initial_colonized_probability.n_cols),
+            "different parameters\n"
+            "for a total of `nrow(parameters)*n` = ",
+            static_cast<int>(initial_colonized_probability.n_cols * n),
+            "distinct trajectories.\n");
 
-  progressbar bar(static_cast<int>(n));
+  //progressbar bar(static_cast<int>(n));
 
   arma::cube simulation_results(ward_matrix.n_rows,
                                 ward_matrix.n_cols + initial_colonized_probability.n_cols,
@@ -236,8 +238,8 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
     simulation_results.slice(sim) = simulate_discrete_model_internal_one(
       initial_colonized_probability, ward_matrix, total_patients_per_ward, parameters, thread_seed);
 
-    #pragma omp critical
-        bar.update();
+    //#pragma omp critical
+    //    bar.update();
 
   }
 
