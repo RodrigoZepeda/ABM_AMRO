@@ -50,6 +50,82 @@ Apparently, you might need a `C++` compiler different from the native Windows on
 following [this instructions](https://code.visualstudio.com/docs/cpp/config-mingw#_prerequisites). If you are using R 
 with `Rtools` you probably already have one (try `gcc --help`). 
 
+The recommended way for Windows is to use the Windows Subsystem for Linux
+
+#### Windows Subsystem for Linux
+
+1. Go to Powershell and write:
+
+```powershell
+wsl --install
+
+```
+
+2. Download Ubuntu from the [Microsoft Store](https://apps.microsoft.com/store/detail/ubuntu/9PDXGNCFSCZV)
+
+3. Open Ubuntu and follow the instructions entering a new username (all in lowercase letters)
+```bash
+Enter new UNIX username: your_username
+```
+
+4. Enter a password for the system
+```bash
+New password: [your_secret_password_invisibly]
+```
+
+5. Update the Ubuntu server
+
+```bash
+sudo apt update
+sudo apt upgrade
+```
+
+6. Install other tools
+```bash
+sudo apt install build-essential git libomp-dev
+```
+
+7. Install miniconda
+
+```bash
+mkdir -p ~/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+rm -rf ~/miniconda3/miniconda.sh
+~/miniconda3/bin/conda init bash
+```
+
+8. Exit the terminal and reopen it
+
+```bash
+exit
+```
+
+9. Create a new environment:
+```bash
+conda create -n AMRO
+```
+
+
+10. Go to the environment:
+```bash
+conda activate AMRO
+```
+
+11. Install pip:
+```bash
+conda install -y pip
+```
+
+12. Install the package!
+```
+pip install git+https://github.com/RodrigoZepeda/ABM_AMRO
+```
+
+
+
+
+
 #### Setting your compiler path for installation
 
 You might have more than one compiler in your computer. The suggested ones are `gcc` for
