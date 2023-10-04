@@ -41,6 +41,27 @@ Linux users require an installation of `openmp`. In Ubuntu you can do it with:
 apt install libomp-dev
 ```
 
+
+#### Setting your compiler path for installation
+
+You might have more than one compiler in your computer. The suggested ones are `gcc` for
+Linux and Windows and `clang` for OSX. You can install using your
+favourite compiler by passing the flag `CC` before pip:
+
+```bash
+CC=/path/to/your/gcc pip install git+https://github.com/RodrigoZepeda/ABM_AMRO
+```
+
+To find the path of your compiler you can do `where gcc` (or the compiler you want)
+in Windows or `which gcc` (or the compiler you want) in Unix.
+
+#### Request support
+You can raise an issue to report installation issues. Make sure to include
+the results of:
+```bash
+pip install --verbose git+https://github.com/RodrigoZepeda/ABM_AMRO
+```
+
 #### Windows (version >= 8 and 64 bit)
 
 
@@ -58,7 +79,6 @@ The recommended way for Windows is to use the Windows Subsystem for Linux
 
 ```powershell
 wsl --install
-
 ```
 
 2. Download Ubuntu from the [Microsoft Store](https://apps.microsoft.com/store/detail/ubuntu/9PDXGNCFSCZV)
@@ -127,34 +147,28 @@ pip install git+https://github.com/RodrigoZepeda/ABM_AMRO
 1. Download the [WSL Extension](https://code.visualstudio.com/docs/remote/wsl) 
 2. In VSCode press `F1` and choose `WSL: Connect to WSL using Distro in New Window`
 3. Select the distro (`Ubuntu`)
-4. Select the interpreter `CTRL + Shift + P > Select Interpreter > AMRO conda`
+4. Select the interpreter `CTRL + Shift + P > Python Select Interpreter > AMRO`
 5. Start coding
 
-> To add new files into your Ubuntu machine, from the WSL terminal do:
+### Add files
+To add new files into your Ubuntu machine, from the WSL terminal do:
 ```bash
 explorer.exe .
 ```
 to open the Window's explorer and know where your virtual machine lies
 
-#### Setting your compiler path for installation
-
-You might have more than one compiler in your computer. The suggested ones are `gcc` for
-Linux and Windows and `clang` for OSX. You can install using your
-favourite compiler by passing the flag `CC` before pip:
-
-```bash
-CC=/path/to/your/gcc pip install git+https://github.com/RodrigoZepeda/ABM_AMRO
+### Install other packages 
+From the `VSCode` terminal with `WSL` you can install packages with `conda` or `pip`
+```
+conda install pandas
+pip install session_info
 ```
 
-To find the path of your compiler you can do `where gcc` (or the compiler you want)
-in Windows or `which gcc` (or the compiler you want) in Unix.
+### Run Jupyter
+1. Open a `ipynb` file and install [the extensions](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter)
+2. You might also need to Select the interpreter via `CTRL + Shift + P > Python Select Interpreter > AMRO`
 
-#### Request support
-You can raise an issue to report installation issues. Make sure to include
-the results of:
-```bash
-pip install --verbose git+https://github.com/RodrigoZepeda/ABM_AMRO
-```
+
 
 ## Tutorials 
 
