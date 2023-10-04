@@ -122,9 +122,19 @@ conda install -y pip
 pip install git+https://github.com/RodrigoZepeda/ABM_AMRO
 ```
 
+## Developing on VSCODE for Windows WSL
 
+1. Download the [WSL Extension](https://code.visualstudio.com/docs/remote/wsl) 
+2. In VSCode press `F1` and choose `WSL: Connect to WSL using Distro in New Window`
+3. Select the distro (`Ubuntu`)
+4. Select the interpreter `CTRL + Shift + P > Select Interpreter > AMRO conda`
+5. Start coding
 
-
+> To add new files into your Ubuntu machine, from the WSL terminal do:
+```bash
+explorer.exe .
+```
+to open the Window's explorer and know where your virtual machine lies
 
 #### Setting your compiler path for installation
 
