@@ -1,3 +1,0 @@
-numpy~=1.25.1
-pybind11~=2.11.1
-setuptools~=68.0.0
