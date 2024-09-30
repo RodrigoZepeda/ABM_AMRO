@@ -23,7 +23,7 @@ def test_gamma_equals_1_all_arrivals_infected():
         [0.2],  # Beta
         [1.0],  # Gamma
     ]).transpose()
-    model_run = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters,
+    model_run = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters,
                                                           10)
     assert numpy.all(model_run[:, 3] == model_run[:, 6])
 
@@ -105,8 +105,8 @@ def test_seed_equal():
         [0.2],  # Beta
         [0.5],  # Gamma
     ]).transpose()
-    model_1 = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters, 10)
-    model_2 = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters, 10)
+    model_1 = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters, 10)
+    model_2 = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters, 10)
     assert numpy.all(model_1 == model_2)
 
 
@@ -130,8 +130,8 @@ def test_seed_different():
         [1.0],  # Beta
         [0.5],  # Gamma
     ]).transpose()
-    model_1 = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters, 1)
-    model_2 = amro.simulate_discrete_model_internal_one(initial_colonized, ward_matrix, total_patients, parameters, 10)
+    model_1 = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters, 1)
+    model_2 = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters, 10)
     assert ~numpy.all(model_1 == model_2)
 
 """
