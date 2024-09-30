@@ -23,16 +23,17 @@ You can also download the repository and build locally with:
 python setup.py build_ext -i
 ```
 
+You might need some additional libraries installed depending on your operating system:
+
 ### Troubleshooting installation
+
+#### All operating systems
+
+Make sure you are using numpy version 1.25
 
 #### OSX
 
-Mac users require an installation of `libomp`. This can be done with homebrew via 
-```bash
-brew install libomp
-```
-
-If this is the first time you hear of homebrew you can check [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-homebrew-on-macos).
+See the file `INSTALLING_OSX.md` for specific help
 
 #### Ubuntu
 
@@ -62,6 +63,34 @@ CC=/path/to/your/gcc pip install git+https://github.com/RodrigoZepeda/ABM_AMRO
 
 To find the path of your compiler you can do `where gcc` (or the compiler you want)
 in Windows or `which gcc` (or the compiler you want) in Unix.
+
+#### Docker
+
+This repository also provides a `Dockerfile` to run the repository in a container. To do so, from your terminal (OSX/Ubuntu) go to the folder with this repository and run:
+
+```bash
+docker build -t abm2024 .
+```
+
+to build the container. Then run the container:
+
+```bash
+docker run -p 8888:8888 -v $(pwd):/home/jovyan/work abm2024
+```
+
+**Note** The `$(pwd):/home/jovyan/work` connects a volume from your computer to the docker. In the jupyter interface you'll see your files listed in the `work` directory.
+
+Using your browser go to:
+```
+http://localhost:8888/
+```
+
+to open `docker`'s jupyter. To do that you'll also need a token that is automatically generated each time and listed in the terminal as jupyter runs. You can see it inside the `urls` listed. Here is mine where the token is `a11e01d7c327e403380c803e6c96c58ca36cc3e7ade89f38`:
+
+![Image showing the terminal and a line with a url reading `http://127.0.0.1:8888/lab?token=a11e01d7c327e403380c803e6c96c58ca36cc3e7ade89f38` just below where it says Jupyter Server is running at...](figures/token.png)
+
+Use that token to access Jupyter. 
+
 
 #### Request support
 You can raise an issue to report installation issues. Make sure to include
