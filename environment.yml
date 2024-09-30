@@ -1,4 +1,4 @@
-name: ABM_Identifiability_python
+name: amro
 channels:
   - conda-forge
   - defaults
