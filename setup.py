@@ -3,9 +3,9 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 import sys
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
-# OSX build with CC=/usr/local/opt/llvm/bin/clang python setup.py build_ext -i
+# Build with `CC=/usr/local/bin/gcc-14 CXX=/usr/local/bin/g++-14 python setup.py build_ext -i`
 # after installing brew install llvm libomp
 cpp_args = ['-fopenmp']
 if sys.platform == "darwin":

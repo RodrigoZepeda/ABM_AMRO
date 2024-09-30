@@ -12,42 +12,51 @@
     #define omp_get_thread_num() 0
 #endif
 
-// Example
-// --------------
-// library(Matrix)
-// total_patients <- 20
-// ward_matrix <- c(rep(0,6), #Day
-//                  rep(1,6), #Ward
-//                  52, 53, 17, 200, 87, 99, #MRN
-//                  1, 1, 0, 0, 1, 0, #New_arrival
-//                  1,0.5,0.5,1,1,0.3, #Weight
-//                  rep(-1, 6), #Next day position
-//                  0,0,0,1,0,0, #Colonized status under model 1
-//                  0,0,1,0,0,1, #Colonized status under model 2
-//                  0,0,0,0,0,0) |>  #Colonized status under model 3
-//   matrix(ncol = 9)
-// parameters <- c(0.1 , 0.5 , 0.9, #alpha
-//                   0.2 , 0.35, 0.5, #beta
-//                   0.5 , 0.6 , 0.7) |> matrix(ncol = 3) #gamma
-// colnames(parameters) <- c("alpha","beta","gamma")
-// progress_patients_probability_ward_1_timestep(ward_matrix, total_patients, parameters)
-// [[Rcpp::export]]
+/**
+@title Progress patients across one ward
+
+@description Progresses the patients that belong to the same ward one timestep. Consider
+a group of individuals in the same ward. Let `C_i(t)` denote whether individual `i` is colonized
+`C_i(t) = 1` or not colonized `C_i(t) = 0` at time `t`. The probability of an individual being colonized
+at time `t + 1` is given by:
+
+                (1 - alpha)*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
+
+@param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
+include the following columns:
+
+Column 1: For this function it can be anything; however see `progress_patients_1_timestep`.
+Column 2: For this function it can be anything; however see `progress_patients_1_timestep`.
+Column 3: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
+Column 4: Weight w_i of the individual in the ward.
+Column 5: For this function it can be anything; however see `simulate_discrete_model_internal_one`.
+Column 6 to Last column: Each of these columns correspond to a different simulation with 1's and 0's. Values
+equal to 1 correspond to colonized cases and 0's correspond to not colonized individuals. You can add as many columns as your memory allows. 
+
+@param total_patients The total number of patients in the current ward at time $t$ (current time).
+
+@param parameters A matrix with three columns corresponding to the model's three parameters. The
+first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+
+@return A `ward_matrix` corresponding to the state of the ward at time `t + 1`
+*/
 arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
                                                         const double& total_patients,
                                                         const arma::mat& parameters) {
 
-  //In parameter matrix
+  //Location of parameters in the parameter matrix.
   const arma::uword alpha_col = 0;
-  const arma::uword beta_col = 1;
+  const arma::uword beta_col  = 1;
   const arma::uword gamma_col = 2;
 
-  //In ward matrix
+  //Information location in the ward matrix:
   const arma::uword arrivals_col = 3;
   const arma::uword weights_col = 4;
   const arma::uword colonized_col_init = 6;
   const arma::uword colonized_col_end = ward_matrix.n_cols;
 
   for (arma::uword col_index = colonized_col_init; col_index < colonized_col_end; ++col_index) {
+
     // Weight the colonized part of the matrix W = weights*C
     ward_matrix.col(col_index) %= ward_matrix.col(weights_col);
 
@@ -72,34 +81,37 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
   return ward_matrix;
 }
 
-// Example
-// --------------
-// library(Matrix)
-// total_patients = matrix(
-//   c(0,0, #Day
-//     1,3, #Ward
-//     10,20 #Size
-//   ), ncol = 3)
-//
-// ward_matrix <- matrix(
-//     c(rep(0, 6), #Day
-//       1, 3, 1, 3, 3, 3,#Ward
-//      52, 53, 17, 200, 87, 99, #MRN
-//      1, 1, 0, 0, 1, 0, #New_arrival
-//      1,1,1,1,1,1, #Weight
-//      rep(-1, 6), #Next day position
-//      0,0,1,0,0,0, #Colonized status under model 1
-//      0,0,1,0,0,1, #Colonized status under model 2
-//      0,0,0,0,0,0 #Colonized status under model 3
-//     ), ncol = 9)
-//
-// parameters <- c(0.1 , 0.5 , 0.9, #alpha
-//                 0.2 , 0.35, 0.5, #beta
-//                 0.5 , 0.6 , 0.7) |> matrix(ncol = 3) #gamma
-// colnames(parameters) <- c("alpha","beta","gamma")
-//
-// progress_patients_1_timestep(ward_matrix, total_patients, parameters)
-// [[Rcpp::export]]
+/**
+@title Progress patients across all wards
+
+@description Progresses all the patients across all wards one timestep. Consider
+a group of individuals in the same ward. Let `C_i(t)` denote whether individual `i` is colonized
+`C_i(t) = 1` or not colonized `C_i(t) = 0` at time `t`. The probability of an individual being colonized
+at time `t + 1` is given by:
+
+                (1 - alpha)*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
+
+@param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
+include the following columns:
+
+Column 1: Unique identifier for the ward.
+Column 2: Key that indicates where in the total_patients_per_ward matrix the ward identified in column 1 is. 
+Column 3: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
+Column 4: Weight w_i of the individual in the ward.
+Column 5: For this function it can be anything; however see `simulate_discrete_model_internal_one`.
+Column 6 to Last column: Each of these columns correspond to a different simulation with 1's and 0's. Values
+equal to 1 correspond to colonized cases and 0's correspond to not colonized individuals. You can add as many columns as your memory allows. 
+
+@param total_patients_per_ward A matrix with two columns: 
+
+Column 1: The number of the ward (unique identifier).
+Column 2: The number of patients in that ward. 
+
+@param parameters A matrix with three columns corresponding to the model's three parameters. The
+first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+
+@return A `ward_matrix` corresponding to the state of all the wards at time `t + 1`
+*/
 arma::mat progress_patients_1_timestep(arma::mat& ward_matrix,
                                        const arma::mat& total_patients_per_ward,
                                        const arma::mat& parameters) {
@@ -135,7 +147,42 @@ arma::mat progress_patients_1_timestep(arma::mat& ward_matrix,
   return ward_matrix;
 }
 
-// [[Rcpp::export]]
+/**
+@title Simulate discrete model
+
+@description Simulates all the patients across all wards across all timesteps. Consider
+a group of individuals in the same ward. Let `C_i(t)` denote whether individual `i` is colonized
+`C_i(t) = 1` or not colonized `C_i(t) = 0` at time `t`. The probability of an individual being colonized
+at time `t + 1` is given by:
+
+                (1 - alpha)*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
+
+@param initial_colonized_probability A matrix describing the initial state of the model. All simulations are run with the same 
+`initial_colonized_probability`.               
+
+@param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
+include the following columns:
+
+Column 1: Unique identifier for the ward.
+Column 2: Key that indicates where in the total_patients_per_ward matrix the ward identified in column 1 is. 
+Column 3: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
+Column 4: Weight w_i of the individual in the ward.
+Column 5: Location (row) where the same patient appears in the dataset the following day. 
+Column 6 to Last column: Each of these columns correspond to a different simulation with 1's and 0's. Values
+equal to 1 correspond to colonized cases and 0's correspond to not colonized individuals. You can add as many columns as your memory allows. 
+
+@param total_patients_per_ward A matrix with two columns: 
+
+Column 1: The number of the ward (unique identifier).
+Column 2: The number of patients in that ward. 
+
+@param parameters A matrix with three columns corresponding to the model's three parameters. The
+first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+
+@param seed Random seed for `arma_rng`. 
+
+@return A `ward_matrix` corresponding to the state of all the wards at time `t + 1`
+*/
 arma::mat simulate_discrete_model_internal_one(const arma::mat& initial_colonized_probability,
                                                arma::mat& ward_matrix,
                                                const arma::mat& total_patients_per_ward,
@@ -198,8 +245,7 @@ arma::mat simulate_discrete_model_internal_one(const arma::mat& initial_colonize
 
 }
 
-// Function to run 'n' simulations in parallel
-// [[Rcpp::export]]
+/** 
 arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_probability,
                                             arma::mat& ward_matrix,
                                             const arma::mat& total_patients_per_ward,
@@ -245,9 +291,19 @@ arma::cube simulate_discrete_model_internal(const arma::mat& initial_colonized_p
 
   return simulation_results;
 }
+*/
 
+/*
+@title Obtain daily number of colonized
 
-// [[Rcpp::export]]
+@description Given a simulation created with `simulate_discrete` this function obtains the total number of
+colonized cases per simulation and per day. 
+
+@param model_colonized A matrix obtained from a `simulate_discrete_model` object
+
+@return A matrix with days being each rows and columns being the number of simulations. Each
+matrix entry corresponds to the total number of colonized cases in that day/simulation. 
+*/
 arma::mat total_positive(const arma::mat& model_colonized){
 
   //Column for days in ward_matrix
@@ -271,7 +327,21 @@ arma::mat total_positive(const arma::mat& model_colonized){
 
 }
 
-// [[Rcpp::export]]
+/*
+@title Summarize daily number of colonized across all simulations
+
+@description Given a simulation created with `simulate_discrete` this function obtains the quantiles
+specified in `quantiles`
+
+@param model_colonized A matrix obtained from a `simulate_discrete_model` object
+@param quantiles A vector of the quantiles to calculate for the summary. 
+
+@return A matrix with the following columns:
+Column 0: The day (each row is a day and this is the day number). 
+Column 1: The mean number of cases. 
+Column 2: The standard deviation on the number of cases. 
+Column 3 to Last: Any quantiles specified in the quantiles parameter.  
+*/
 arma::mat summary_of_total_positive(const arma::mat& model_colonized,
                                       const arma::vec quantiles){
 
