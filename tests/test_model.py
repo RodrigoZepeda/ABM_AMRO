@@ -165,7 +165,7 @@ def test_progress_patients_clearance_rho_imported_0():
     ]).transpose()
     n_sims = 1
     pstep = amro.progress_patients_probability_ward_1_timestep(ward_matrix, total_patients, parameters, n_sims)
-    assert numpy.all(pstep[:, 7] == 0) & numpy.all(pstep[:, 6] == pstep[:, 4]) #All imported colonized but none detected
+    assert numpy.all(pstep[:, 7] == 0) and numpy.all(pstep[:, 6] == pstep[:, 3]) #All imported colonized but none detected
 
 def test_gamma_equals_1_all_arrivals_infected():
     """

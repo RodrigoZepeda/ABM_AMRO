@@ -17,46 +17,58 @@ PYBIND11_MODULE(amro, m) {
 
     m.def("simulate_discrete_model", &simulate_discrete_model_internal_one,
         R"doc(
-        @title Simulate discrete model
+            @title Simulate discrete model
 
-        @description Simulates all the patients across all wards across all timesteps. Consider
-        a group of individuals in the same ward. Let `C_i(t)` denote whether individual `i` is colonized
-        `C_i(t) = 1` or not colonized `C_i(t) = 0` at time `t`. The probability of an individual being colonized
-        at time `t + 1` is given by:
+            @description Simulates all the patients across all wards across all timesteps. Consider
+            a group of individuals in the same ward. Let `C_i(t)` denote whether individual `i` is colonized
+            `C_i(t) = 1` or not colonized `C_i(t) = 0` at time `t`. The probability of an individual being colonized
+            at time `t + 1` is given by:
 
-             [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
+                 [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
 
-        Once an individual is colonized there is a certain probability rho that they will be detected. Furthermore
-        if they are detected then alpha can be substituted by alpha2 with alpha2 being a increased/decreased
-        clearance probability
+            Once an individual is colonized there is a certain probability that they will be detected. If the
+            individual is an imported colonized case they will be detected with probability `rho_imported` and
+            if they are a colonized case that was already hospitalized they will be detected with probability
+            `rho_hospital`.
 
-        @param initial_colonized_probability A matrix describing the initial state of the model. All simulations are run with the same
-        `initial_colonized_probability`.
+            Furthermore  if they are detected then alpha can be substituted by alpha2 with alpha2 being a different
+            clearance probability.
 
-        @param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
-        include the following columns:
+            @param initial_colonized_probability A matrix describing the initial state of the model. All simulations are run with the same
+            `initial_colonized_probability`.
 
-        Column 1: Unique identifier for the ward.
-        Column 2: Key that indicates where in the total_patients_per_ward matrix the ward identified in column 1 is.
-        Column 3: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
-        Column 4: Weight w_i of the individual in the ward.
-        Column 5: Location (row) where the same patient appears in the dataset the following day.
-        Column 6 to Last column: Each of these columns correspond to a different simulation with 1's and 0's. Values
-        equal to 1 correspond to colonized cases and 0's correspond to not colonized individuals. You can add as many columns as your memory allows.
+            @param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
+            include the following columns:
 
-        @param total_patients_per_ward A matrix with two columns:
+            Column 1: Unique identifier for the ward.
+            Column 2: Key that indicates where in the total_patients_per_ward matrix the ward identified in column 1 is.
+            Column 3: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
+            Column 4: Weight w_i of the individual in the ward.
+            Column 5: Location (row) where the same patient appears in the dataset the following day.
+            Column 6 to Last column: Each of these columns correspond to a different simulation with 1's and 0's. Values
+            equal to 1 correspond to colonized cases and 0's correspond to not colonized individuals. You can add as many columns as your memory allows.
 
-        Column 1: The number of the ward (unique identifier).
-        Column 2: The number of patients in that ward.
+            @param total_patients_per_ward A matrix with columns:
 
-        @param parameters A matrix with three columns corresponding to the model's three parameters. The
-        first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+            Column 0: The day of the observation.
+            Column 1: The number of the ward (unique identifier).
+            Column 2: The number of patients in that ward.
 
-        @param n_sims Number of simulations currently involved in the process.
+            @param parameters A matrix with columns corresponding to the model's parameters.
 
-        @param seed Random seed for `arma_rng`.
+            Column 0: `alpha` the clearance probability for the undetected.
+            Column 1: `beta` the force of infection.
+            Column 2: `gamma` probability of an imported case being colonized.
+            Column 3: `rho_hospital` the probability of being detected for a hospitalized case.
+            Column 4: `alpha_2` the clearance probability for the detected.
+            Column 5: `rho_imported` the probability of being detected for an imported case.
 
-        @return A `ward_matrix` corresponding to the state of all the wards at time `t + 1`
+            @param n_sims Number of simulations currently involved in the process.
+
+            @param seed Random seed for `arma_rng`.
+
+            @return A `ward_matrix` corresponding to the state of all the wards at time `t + 1`
+
         )doc",
           "initial_colonized_probability"_a=1,
           "initial_detected_probability"_a=2,
@@ -74,30 +86,40 @@ PYBIND11_MODULE(amro, m) {
         `C_i(t) = 1` or not colonized `C_i(t) = 0` at time `t`. The probability of an individual being colonized
         at time `t + 1` is given by:
 
-           [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
+             [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
 
-        Once an individual is colonized there is a certain probability rho that they will be detected. Furthermore
-        if they are detected then alpha can be substituted by alpha2 with alpha2 being a increased/decreased
-        clearance probability
+        Once an individual is colonized there is a certain probability that they will be detected. If the
+        individual is an imported colonized case they will be detected with probability `rho_imported` and
+        if they are a colonized case that was already hospitalized they will be detected with probability
+        `rho_hospital`.
+
+        Furthermore  if they are detected then alpha can be substituted by alpha2 with alpha2 being a different
+        clearance probability.
 
         @param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
         include the following columns:
 
+        Column 0: For this function it can be anything; however see `progress_patients_1_timestep`.
         Column 1: For this function it can be anything; however see `progress_patients_1_timestep`.
-        Column 2: For this function it can be anything; however see `progress_patients_1_timestep`.
-        Column 3: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
-        Column 4: Weight w_i of the individual in the ward.
-        Column 5: For this function it can be anything; however see `simulate_discrete_model_internal_one`.
-        Column 6 to `n_sims + 5`: Each of these columns correspond to a different simulation with 1's and 0's. Values
+        Column 2: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
+        Column 3: Weight w_i of the individual in the ward.
+        Column 4: For this function it can be anything; however see `simulate_discrete_model_internal_one`.
+        Column 5 to `n_sims + 5`: Each of these columns correspond to a different simulation with 1's and 0's. Values
         equal to 1 correspond to colonized cases and 0's correspond to not colonized individuals.
         Column `n_sims + 6` to last column: Each of these columns correspond to a different simulation with 1's and 0's. Values
         equal to 1 correspond to colonized cases THAT WERE DETECTED and 0's correspond to UNDETECTED individuals
         (either not colonized or colonized but not detected)
 
-        @param total_patients The total number of patients in the current ward at time $t$ (current time).
+        @param total_patients The total number of patients in the current ward at time `t` (current time).
 
-        @param parameters A matrix with three columns corresponding to the model's three parameters. The
-        first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+        @param parameters A matrix with columns corresponding to the model's parameters.
+
+        Column 0: `alpha` the clearance probability for the undetected.
+        Column 1: `beta` the force of infection.
+        Column 2: `gamma` probability of an imported case being colonized.
+        Column 3: `rho_hospital` the probability of being detected for a hospitalized case.
+        Column 4: `alpha_2` the clearance probability for the detected.
+        Column 5: `rho_imported` the probability of being detected for an imported case.
 
         @param n_sims Number of simulations currently involved in the process.
 
@@ -117,11 +139,15 @@ PYBIND11_MODULE(amro, m) {
         `C_i(t) = 1` or not colonized `C_i(t) = 0` at time `t`. The probability of an individual being colonized
         at time `t + 1` is given by:
 
-                        [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
+            [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
 
-        Once an individual is colonized there is a certain probability rho that they will be detected. Furthermore
-        if they are detected then alpha can be substituted by alpha2 with alpha2 being a increased/decreased
-        clearance probability
+        Once an individual is colonized there is a certain probability that they will be detected. If the
+        individual is an imported colonized case they will be detected with probability `rho_imported` and
+        if they are a colonized case that was already hospitalized they will be detected with probability
+        `rho_hospital`.
+
+        Furthermore  if they are detected then alpha can be substituted by alpha2 with alpha2 being a different
+        clearance probability.
 
         @param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
         include the following columns:
@@ -139,12 +165,17 @@ PYBIND11_MODULE(amro, m) {
 
         @param total_patients_per_ward A matrix with two columns:
 
-        Column 1: The day we are describing,
-        Column 2: The number of the ward (unique identifier),
-        Column 3: The number of patients in that ward.
+        Column 1: The number of the ward (unique identifier).
+        Column 2: The number of patients in that ward.
 
-        @param parameters A matrix with three columns corresponding to the model's three parameters. The
-        first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+        @param parameters A matrix with columns corresponding to the model's parameters.
+
+        Column 0: `alpha` the clearance probability for the undetected.
+        Column 1: `beta` the force of infection.
+        Column 2: `gamma` probability of an imported case being colonized.
+        Column 3: `rho_hospital` the probability of being detected for a hospitalized case.
+        Column 4: `alpha_2` the clearance probability for the detected.
+        Column 5: `rho_imported` the probability of being detected for an imported case.
 
         @param n_sims Number of simulations currently involved in the process.
 
