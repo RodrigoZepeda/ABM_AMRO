@@ -253,7 +253,7 @@ def test_initial_detected_equals_1_all_colonized_detected():
         [0.3],  # Gamma
         [1.0],  # Rho
         [0.2],  # New alpha
-        [0.3],  # Rho for new cases
+        [1.0],  # Rho for new cases
     ]).transpose()
     model_run = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
     assert numpy.all(model_run[:, 7] == model_run[:, 6])
