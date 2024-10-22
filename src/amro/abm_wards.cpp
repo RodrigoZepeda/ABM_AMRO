@@ -22,28 +22,38 @@ at time `t + 1` is given by:
 
      [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
 
-Once an individual is colonized there is a certain probability rho that they will be detected. Furthermore
-if they are detected then alpha can be substituted by alpha2 with alpha2 being a increased/decreased
-clearance probability
+Once an individual is colonized there is a certain probability that they will be detected. If the
+individual is an imported colonized case they will be detected with probability `rho_imported` and
+if they are a colonized case that was already hospitalized they will be detected with probability
+`rho_hospital`.
+
+Furthermore  if they are detected then alpha can be substituted by alpha2 with alpha2 being a different
+clearance probability.
 
 @param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
 include the following columns:
 
+Column 0: For this function it can be anything; however see `progress_patients_1_timestep`.
 Column 1: For this function it can be anything; however see `progress_patients_1_timestep`.
-Column 2: For this function it can be anything; however see `progress_patients_1_timestep`.
-Column 3: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
-Column 4: Weight w_i of the individual in the ward.
-Column 5: For this function it can be anything; however see `simulate_discrete_model_internal_one`.
-Column 6 to `n_sims + 5`: Each of these columns correspond to a different simulation with 1's and 0's. Values
+Column 2: Indicator for new arrivals (= 1) and individuals that were already here (= 0)
+Column 3: Weight w_i of the individual in the ward.
+Column 4: For this function it can be anything; however see `simulate_discrete_model_internal_one`.
+Column 5 to `n_sims + 5`: Each of these columns correspond to a different simulation with 1's and 0's. Values
 equal to 1 correspond to colonized cases and 0's correspond to not colonized individuals.
 Column `n_sims + 6` to last column: Each of these columns correspond to a different simulation with 1's and 0's. Values
 equal to 1 correspond to colonized cases THAT WERE DETECTED and 0's correspond to UNDETECTED individuals
 (either not colonized or colonized but not detected)
 
-@param total_patients The total number of patients in the current ward at time $t$ (current time).
+@param total_patients The total number of patients in the current ward at time `t` (current time).
 
-@param parameters A matrix with three columns corresponding to the model's three parameters. The
-first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+@param parameters A matrix with columns corresponding to the model's parameters.
+
+Column 0: `alpha` the clearance probability for the undetected.
+Column 1: `beta` the force of infection.
+Column 2: `gamma` probability of an imported case being colonized.
+Column 3: `rho_hospital` the probability of being detected for a hospitalized case.
+Column 4: `alpha_2` the clearance probability for the detected.
+Column 5: `rho_imported` the probability of being detected for an imported case.
 
 @param n_sims Number of simulations currently involved in the process.
 
@@ -55,19 +65,18 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
                                                         const arma::uword n_sims) {
 
   //Location of parameters in the parameter matrix.
-  const arma::uword alpha_col   = 0; //Probability of clearance
-  const arma::uword beta_col    = 1; //Infection rate for the hospitalized cases
-  const arma::uword gamma_col   = 2; //Infection rate for the imported cases
-  const arma::uword rho_col     = 3; //Probability of detection
-  const arma::uword alpha_col_2 = 4; //New probability of clearance if detected
+  const arma::uword alpha_col      = 0; //Probability of clearance
+  const arma::uword beta_col       = 1; //Infection rate for the hospitalized cases
+  const arma::uword gamma_col      = 2; //Probability of colonized in imported cases
+  const arma::uword rho_col_hosp   = 3; //Probability of detection for hospitalized cases
+  const arma::uword alpha_col_2    = 4; //New probability of clearance if detected
+  const arma::uword rho_col_import = 5; //Probability of detection for the imported cases
 
   //Information location in the ward matrix:
-  const arma::uword arrivals_col = 3;
-  const arma::uword weights_col = 4;
-  const arma::uword colonized_col_init = 6;
-  const arma::uword colonized_col_end  = n_sims + (colonized_col_init - 1);
-  //const arma::uword detected_col_init  = colonized_col_init + n_sims;
-  //const arma::uword detected_col_end   = ward_matrix.n_cols;
+  const arma::uword arrivals_col = 3;   //Column in ward_matrix marking if new arrival = 1 or was already here = 0
+  const arma::uword weights_col = 4;    //Column in ward_matrix with observation weights (between 0 and 1)
+  const arma::uword colonized_col_init = 6; //Column where the colonized individuals start. From here on every col is a different simulation
+  const arma::uword colonized_col_end  = n_sims + (colonized_col_init - 1); //Column where the colonized individuals end
 
   for (arma::uword col_index = colonized_col_init; col_index <= colonized_col_end; ++col_index) {
 
@@ -99,11 +108,15 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
       }
 
       // Simulate the probability of detection in those colonized if they are colonized but haven't been detected
-      if (ward_matrix(row_index, col_index) == 1){ //Check if is colonized
-        if (arma::randu() < parameters(col_index - colonized_col_init, rho_col)) { //Simulate detection with probability rho
+      if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 0)){ //Check if is colonized and was not imported
+        if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_hosp)) { //Simulate detection with probability rho_col_hosp
             ward_matrix(row_index, col_index + n_sims) = 1; //Detect
         }
-      } else {
+      } else if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 1)){ //Check if is colonized and imported
+        if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_import)) { //Simulate detection with probability rho_col_hosp
+            ward_matrix(row_index, col_index + n_sims) = 1; //Detect
+        }
+      } else { //Not colonized
             ward_matrix(row_index, col_index + n_sims) = 0; //Remove detection if no longer colonized
       }
     }
@@ -121,9 +134,13 @@ at time `t + 1` is given by:
 
     [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
 
-Once an individual is colonized there is a certain probability rho that they will be detected. Furthermore
-if they are detected then alpha can be substituted by alpha2 with alpha2 being a increased/decreased
-clearance probability
+Once an individual is colonized there is a certain probability that they will be detected. If the
+individual is an imported colonized case they will be detected with probability `rho_imported` and
+if they are a colonized case that was already hospitalized they will be detected with probability
+`rho_hospital`.
+
+Furthermore  if they are detected then alpha can be substituted by alpha2 with alpha2 being a different
+clearance probability.
 
 @param ward_matrix  A `ward_matrix` corresponding to the state of the ward at time $t$. The matrix should
 include the following columns:
@@ -144,8 +161,14 @@ equal to 1 correspond to colonized cases THAT WERE DETECTED and 0's correspond t
 Column 1: The number of the ward (unique identifier).
 Column 2: The number of patients in that ward.
 
-@param parameters A matrix with three columns corresponding to the model's three parameters. The
-first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+@param parameters A matrix with columns corresponding to the model's parameters.
+
+Column 0: `alpha` the clearance probability for the undetected.
+Column 1: `beta` the force of infection.
+Column 2: `gamma` probability of an imported case being colonized.
+Column 3: `rho_hospital` the probability of being detected for a hospitalized case.
+Column 4: `alpha_2` the clearance probability for the detected.
+Column 5: `rho_imported` the probability of being detected for an imported case.
 
 @param n_sims Number of simulations currently involved in the process.
 
@@ -197,9 +220,13 @@ at time `t + 1` is given by:
 
      [(1 - detected)*(1 - alpha) + detected*(1 - alpha2)]*w_i + (1 - w_i)(beta / N)*sum(w_i * C_i) + gamma*h_i
 
-Once an individual is colonized there is a certain probability rho that they will be detected. Furthermore
-if they are detected then alpha can be substituted by alpha2 with alpha2 being a increased/decreased
-clearance probability
+Once an individual is colonized there is a certain probability that they will be detected. If the
+individual is an imported colonized case they will be detected with probability `rho_imported` and
+if they are a colonized case that was already hospitalized they will be detected with probability
+`rho_hospital`.
+
+Furthermore  if they are detected then alpha can be substituted by alpha2 with alpha2 being a different
+clearance probability.
 
 @param initial_colonized_probability A matrix describing the initial state of the model. All simulations are run with the same 
 `initial_colonized_probability`.               
@@ -215,13 +242,20 @@ Column 5: Location (row) where the same patient appears in the dataset the follo
 Column 6 to Last column: Each of these columns correspond to a different simulation with 1's and 0's. Values
 equal to 1 correspond to colonized cases and 0's correspond to not colonized individuals. You can add as many columns as your memory allows. 
 
-@param total_patients_per_ward A matrix with two columns: 
+@param total_patients_per_ward A matrix with columns:
 
+Column 0: The day of the observation.
 Column 1: The number of the ward (unique identifier).
 Column 2: The number of patients in that ward. 
 
-@param parameters A matrix with three columns corresponding to the model's three parameters. The
-first column corresponds to `alpha`, the second to `beta` and the third to `gamma`.
+@param parameters A matrix with columns corresponding to the model's parameters.
+
+Column 0: `alpha` the clearance probability for the undetected.
+Column 1: `beta` the force of infection.
+Column 2: `gamma` probability of an imported case being colonized.
+Column 3: `rho_hospital` the probability of being detected for a hospitalized case.
+Column 4: `alpha_2` the clearance probability for the detected.
+Column 5: `rho_imported` the probability of being detected for an imported case.
 
 @param n_sims Number of simulations currently involved in the process.
 
