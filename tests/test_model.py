@@ -1,15 +1,121 @@
 import numpy
 import amro
 
+def test_progress_patients_clearance_rate_100():
+    """
+    Tests the run of just one simulation when clearance rate is 100% to check no one remains colonized
+    """
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0],        # Day
+        [1, 1, 1, 1, 1, 1],        # Ward
+        [52, 53, 17, 200, 87, 99], # MRN
+        [0, 0, 0, 0, 0, 0],        # New_arrival
+        [1, 1, 1, 1, 1, 1],        # Weight
+        [-1, -1, -1, -1, -1, -1],  # Next day
+        [0, 1, 1, 0, 1, 1],  # Colonized
+        [0, 1, 0, 0, 0, 0],  # Detected
+    ]).transpose()
+    total_patients = 6
+    parameters = numpy.array([
+        [1.0],  # Alpha
+        [0.0],  # Beta
+        [0.0],  # Gamma
+        [1.0],  # Rho
+        [1.0],  # New alpha
+    ]).transpose()
+    n_sims = 1
+    pstep = amro.progress_patients_probability_ward_1_timestep(ward_matrix, total_patients, parameters, n_sims)
+    assert numpy.all(pstep[:, 6] == 0) & numpy.all(pstep[:, 7] == 0)
+
+def test_progress_patients_clearance_rate_0():
+    """
+    Tests the run of just one simulation when clearance rate is 0% to check all remain colonized
+    """
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0],  # Day
+        [1, 1, 1, 1, 1, 1],  # Ward
+        [52, 53, 17, 200, 87, 99],  # MRN
+        [0, 0, 0, 0, 0, 0],  # New_arrival
+        [1, 1, 1, 1, 1, 1],  # Weight
+        [-1, -1, -1, -1, -1, -1],  # Next day
+        [0, 1, 1, 0, 1, 1],  # Colonized
+        [0, 1, 0, 0, 0, 0],  # Detected
+    ]).transpose()
+    total_patients = 6
+    parameters = numpy.array([
+        [0.0],  # Alpha
+        [0.0],  # Beta
+        [0.0],  # Gamma
+        [1.0],  # Rho
+        [0.0],  # New alpha
+    ]).transpose()
+    n_sims = 1
+    pstep = amro.progress_patients_probability_ward_1_timestep(ward_matrix, total_patients, parameters, n_sims)
+    assert numpy.all(pstep[:, 6] == ward_matrix[:,6])
+
+def test_progress_patients_clearance_rho_100():
+    """
+    Tests the run of just one simulation when detection rate is 100% to check all colonized are detected
+    """
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0],  # Day
+        [1, 1, 1, 1, 1, 1],  # Ward
+        [52, 53, 17, 200, 87, 99],  # MRN
+        [0, 0, 0, 0, 0, 0],  # New_arrival
+        [1, 1, 1, 1, 1, 1],  # Weight
+        [-1, -1, -1, -1, -1, -1],  # Next day
+        [0, 1, 1, 0, 1, 1],  # Colonized
+        [0, 1, 0, 0, 0, 0],  # Detected
+    ]).transpose()
+    total_patients = 6
+    parameters = numpy.array([
+        [0.0],  # Alpha
+        [0.2],  # Beta
+        [0.0],  # Gamma
+        [1.0],  # Rho
+        [0.0],  # New alpha
+    ]).transpose()
+    n_sims = 1
+    pstep = amro.progress_patients_probability_ward_1_timestep(ward_matrix, total_patients, parameters, n_sims)
+    assert numpy.all(pstep[:, 6] == pstep[:,7])
+
+def test_progress_patients_clearance_rho_1():
+    """
+    Tests the run of just one simulation when detection rate is 0% to check all colonized are not detected
+    """
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0],  # Day
+        [1, 1, 1, 1, 1, 1],  # Ward
+        [52, 53, 17, 200, 87, 99],  # MRN
+        [0, 0, 0, 0, 0, 0],  # New_arrival
+        [1, 1, 1, 1, 1, 1],  # Weight
+        [-1, -1, -1, -1, -1, -1],  # Next day
+        [0, 1, 1, 0, 1, 1],  # Colonized
+        [0, 0, 0, 0, 0, 0],  # Detected
+    ]).transpose()
+    total_patients = 6
+    parameters = numpy.array([
+        [0.0],  # Alpha
+        [0.2],  # Beta
+        [0.0],  # Gamma
+        [0.0],  # Rho
+        [0.0],  # New alpha
+    ]).transpose()
+    n_sims = 1
+    pstep = amro.progress_patients_probability_ward_1_timestep(ward_matrix, total_patients, parameters, n_sims)
+    assert numpy.all(pstep[:, 7] == 0)
 
 def test_gamma_equals_1_all_arrivals_infected():
-    # Gamma = 1 should infect all new arrivals
+    """
+    Tests that all arrivals are infected if gamma = 100%
+    """
     total_patients = numpy.array([
         [0],
         [1],
         [20],
     ]).transpose()
     initial_colonized = numpy.array([[0, 0, 0, 0, 0, 0]]).transpose()
+    initial_detected = numpy.array([[0, 0, 0, 0, 0, 0]]).transpose()
     ward_matrix = numpy.array([
         [0, 0, 0, 0, 0, 0],  # Day
         [1, 1, 1, 1, 1, 1],  # Ward
@@ -22,13 +128,73 @@ def test_gamma_equals_1_all_arrivals_infected():
         [0.1],  # Alpha
         [0.2],  # Beta
         [1.0],  # Gamma
+        [0.3],  # Rho
+        [0.2],  # New alpha
     ]).transpose()
-    model_run = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters,
-                                                          10)
+    model_run = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
     assert numpy.all(model_run[:, 3] == model_run[:, 6])
 
+def test_detected_persistance():
+    """
+    Tests that if patient was detected as colonized they remain detected until they leave the hospital or
+    get clearance
+    """
+    total_patients = numpy.array([
+        [0,1,2], #Day
+        [1,1,1], #Ward
+        [20,10,12], #Next day
+    ]).transpose()
+    initial_colonized = numpy.array([[1, 0, 1, 0, 0, 1]]).transpose()
+    initial_detected = numpy.array([[1, 0, 0, 0, 0, 0]]).transpose()
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2],  # Day
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
+        [52, 53, 17, 200, 87, 99, 52, 53, 17, 200, 99, 52, 53, 17, 200, 99],  # MRN
+        [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # New_arrival
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Weight
+        [6, 7, 8, 9, -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1],  # Next day
+    ]).transpose()
+    parameters = numpy.array([
+        [0.0],  # Alpha
+        [0.0],  # Beta
+        [0.0],  # Gamma
+        [1.0],  # Rho
+        [0.0],  # New alpha
+    ]).transpose()
+    model_run = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
+    assert numpy.all(model_run[:, 6] == model_run[:, 7])
 
-def test_sum_of_positives():
+def test_initial_detected_equals_1_all_colonized_detected():
+    """
+    Tests that if rho = 1 then all colonized individuals show up as infected
+    """
+    total_patients = numpy.array([
+        [0],
+        [1],
+        [20],
+    ]).transpose()
+    initial_colonized = numpy.array([[1, 0, 1, 0, 0, 1]]).transpose()
+    initial_detected = numpy.array([[1, 1, 1, 1, 1, 1]]).transpose()
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0],  # Day
+        [1, 1, 1, 1, 1, 1],  # Ward
+        [52, 53, 17, 200, 87, 99],  # MRN
+        [1, 1, 0, 0, 1, 0],  # New_arrival
+        [1, 1, 1, 1, 1, 1],  # Weight
+        [-1, -1, -1, -1, -1, -1],  # Next day
+    ]).transpose()
+    parameters = numpy.array([
+        [0.1],  # Alpha
+        [0.2],  # Beta
+        [0.3],  # Gamma
+        [1.0],  # Rho
+        [0.2],  # New alpha
+    ]).transpose()
+    model_run = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
+    assert numpy.all(model_run[:, 7] == model_run[:, 6])
+
+
+def test_sum_of_positives_colonized():
     ward_matrix = numpy.array([
         [0, 0, 0, 0, 0, 0],  # Day
         [1, 1, 1, 1, 1, 1],  # Ward
@@ -42,7 +208,23 @@ def test_sum_of_positives():
         [1, 0, 1, 1, 0, 0],  # Colonized status under model 4
     ]).transpose()
 
-    assert numpy.all(amro.total_positive(ward_matrix) == numpy.array([1, 3, 4, 3]))
+    assert numpy.all(amro.total_positive_colonized(ward_matrix) == numpy.array([1, 3]))
+
+def test_sum_of_positives_detected():
+    ward_matrix = numpy.array([
+        [0, 0, 0, 0, 0, 0],  # Day
+        [1, 1, 1, 1, 1, 1],  # Ward
+        [52, 53, 17, 200, 87, 99],  # MRN
+        [1, 1, 0, 0, 1, 0],  # New_arrival
+        [1, 1, 1, 1, 1, 1],  # Weight
+        [-1, -1, -1, -1, -1, -1],  # Next day position
+        [0, 0, 0, 1, 0, 0],  # Colonized status under model 1
+        [1, 0, 1, 1, 0, 0],  # Colonized status under model 2
+        [1, 1, 1, 1, 0, 0],  # Colonized status under model 3
+        [1, 0, 1, 1, 0, 0],  # Colonized status under model 4
+    ]).transpose()
+
+    assert numpy.all(amro.total_positive_detected(ward_matrix) == numpy.array([4,3]))
 
 
 def test_summary_mean():
@@ -59,8 +241,8 @@ def test_summary_mean():
         [1, 0, 0, 1, 0, 0, 1, 0, 1, 0],  # Colonized status under model 4
     ]).transpose()
 
-    pos = amro.total_positive(ward_matrix)
-    results = amro.summary_of_total_positive(ward_matrix, numpy.array([0.2, 0.9]))
+    pos = amro.total_positive_colonized(ward_matrix, 4)
+    results = amro.summary_of_total_positive(pos, numpy.array([0.2, 0.9]))
 
     assert numpy.all(numpy.mean(pos, axis=1) == results[:, 1])
 
@@ -79,19 +261,22 @@ def test_summary_sd():
         [1, 0, 0, 1, 0, 0, 1, 0, 1, 0],  # Colonized status under model 4
     ]).transpose()
 
-    pos = amro.total_positive(ward_matrix)
-    results = amro.summary_of_total_positive(ward_matrix, numpy.array([0.2, 0.9]))
+    pos = amro.total_positive_colonized(ward_matrix, 4)
+    results = amro.summary_of_total_positive(pos, numpy.array([0.2, 0.9]))
 
     assert numpy.all(numpy.std(pos, axis=1) == results[:, 2])
 
-
 def test_seed_equal():
+    """
+    Tests that same seeds generate same results
+    """
     total_patients = numpy.array([
-        [0],
-        [1],
-        [20],
+        [0,1],
+        [1,1],
+        [20,12],
     ]).transpose()
     initial_colonized = numpy.array([[0, 1, 0, 0, 0, 0]]).transpose()
+    initial_detected = numpy.array([[0, 0.5, 0, 0, 0, 0]]).transpose()
     ward_matrix = numpy.array([
         [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],  # Day
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
@@ -104,19 +289,24 @@ def test_seed_equal():
         [0.1],  # Alpha
         [0.2],  # Beta
         [0.5],  # Gamma
+        [1.0],  # Rho
+        [0.2],  # New alpha
     ]).transpose()
-    model_1 = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters, 10)
-    model_2 = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters, 10)
+    model_1 = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
+    model_2 = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
     assert numpy.all(model_1 == model_2)
 
-
 def test_seed_different():
+    """
+    Tests that different seeds generate different results
+    """
     total_patients = numpy.array([
         [0],
         [1],
         [20],
     ]).transpose()
-    initial_colonized = numpy.array([[0, 1, 0, 0, 0, 0]]).transpose()
+    initial_colonized = numpy.array([[0, 0.3, 0, 0, 0, 0]]).transpose()
+    initial_detected  = numpy.array([[0, 0.5, 0, 0, 0, 0]]).transpose()
     ward_matrix = numpy.array([
         [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],  # Day
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
@@ -129,59 +319,9 @@ def test_seed_different():
         [0.1],  # Alpha
         [1.0],  # Beta
         [0.5],  # Gamma
+        [1.0],  # Rho
+        [0.2],  # New alpha
     ]).transpose()
-    model_1 = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters, 1)
-    model_2 = amro.simulate_discrete_model(initial_colonized, ward_matrix, total_patients, parameters, 10)
-    assert ~numpy.all(model_1 == model_2)
-
-"""
-def test_seed_different_across_threads():
-    total_patients = numpy.array([
-        [0],
-        [1],
-        [20],
-    ]).transpose()
-    initial_colonized = numpy.array([[0, 1, 0, 0, 0, 0]]).transpose()
-    ward_matrix = numpy.array([
-        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],  # Day
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
-        [52, 53, 17, 200, 87, 99, 52, 53, 17, 20],  # MRN
-        [1, 1, 0, 0, 1, 0, 0, 1, 1, 0],  # New_arrival
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Weight
-        [6, 7, 8, -1, -1, -1, -1, -1, -1, 1],  # Next day position
-    ]).transpose()
-    parameters = numpy.array([
-        [0.1],  # Alpha
-        [1.0],  # Beta
-        [0.5],  # Gamma
-    ]).transpose()
-    model_1 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 10, 1,
-                                                    4)
-    model_2 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 10, 2,
-                                                    4)
-    assert ~numpy.all(model_1 == model_2)
-"""
-
-""" def test_seed_equal_across_threads():
-    total_patients = numpy.array([
-        [0],
-        [1],
-        [20],
-    ]).transpose()
-    initial_colonized = numpy.array([[0, 1, 0, 0, 0, 0]]).transpose()
-    ward_matrix = numpy.array([
-        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],  # Day
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
-        [52, 53, 17, 200, 87, 99, 52, 53, 17, 20],  # MRN
-        [1, 1, 0, 0, 1, 0, 0, 1, 1, 0],  # New_arrival
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Weight
-        [6, 7, 8, -1, -1, -1, -1, -1, -1, 1],  # Next day position
-    ]).transpose()
-    parameters = numpy.array([
-        [0.1],  # Alpha
-        [1.0],  # Beta
-        [0.5],  # Gamma
-    ]).transpose()
-    model_1 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 2, 2, 4)
-    model_2 = amro.simulate_discrete_model_internal(initial_colonized, ward_matrix, total_patients, parameters, 10, 2, 4)
-    assert numpy.all(model_1 == model_2)   """
+    model_1 = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 1247923)
+    model_2 = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
+    assert numpy.any(model_1 != model_2)
