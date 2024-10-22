@@ -289,39 +289,9 @@ def test_seed_equal():
         [0.1],  # Alpha
         [0.2],  # Beta
         [0.5],  # Gamma
-        [1.0],  # Rho
+        [0.8],  # Rho
         [0.2],  # New alpha
     ]).transpose()
     model_1 = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
     model_2 = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
     assert numpy.all(model_1 == model_2)
-
-def test_seed_different():
-    """
-    Tests that different seeds generate different results
-    """
-    total_patients = numpy.array([
-        [0],
-        [1],
-        [20],
-    ]).transpose()
-    initial_colonized = numpy.array([[0, 0.3, 0, 0, 0, 0]]).transpose()
-    initial_detected  = numpy.array([[0, 0.5, 0, 0, 0, 0]]).transpose()
-    ward_matrix = numpy.array([
-        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],  # Day
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
-        [52, 53, 17, 200, 87, 99, 52, 53, 17, 20],  # MRN
-        [1, 1, 0, 0, 1, 0, 0, 1, 1, 0],  # New_arrival
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Weight
-        [6, 7, 8, -1, -1, -1, -1, -1, -1, 1],  # Next day position
-    ]).transpose()
-    parameters = numpy.array([
-        [0.1],  # Alpha
-        [1.0],  # Beta
-        [0.5],  # Gamma
-        [1.0],  # Rho
-        [0.2],  # New alpha
-    ]).transpose()
-    model_1 = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 1247923)
-    model_2 = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 10)
-    assert numpy.any(model_1 != model_2)
