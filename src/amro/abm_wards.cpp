@@ -57,12 +57,15 @@ Column 5: `rho_imported` the probability of being detected for an imported case.
 
 @param n_sims Number of simulations currently involved in the process.
 
+@param time_to_detect Time (integer) it takes for a detected colonized to receive their results
+
 @return A `ward_matrix` corresponding to the state of the ward at time `t + 1`
 */
 arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
                                                         const double& total_patients,
                                                         const arma::mat& parameters,
-                                                        const arma::uword n_sims) {
+                                                        const arma::uword n_sims,
+                                                        const int& time_to_detect) {
 
   //Location of parameters in the parameter matrix.
   const arma::uword alpha_col      = 0; //Probability of clearance
@@ -88,9 +91,11 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
         arma::sum(ward_matrix.col(col_index));
 
     // Get the coeficient of multiplication coef = (1 - alpha)*(1 - detected) + (1 - alpha2)*detected
+    //FIXME: Vectorize this part
+    arma::vec detected = arma::conv_to<arma::vec>::from(ward_matrix.col(col_index + n_sims) == 0);
     arma::vec coef =
-        (1 - parameters(col_index - colonized_col_init, alpha_col)) * (1 - ward_matrix.col(col_index + n_sims)) +
-        (1 - parameters(col_index - colonized_col_init, alpha_col_2)) * ward_matrix.col(col_index + n_sims);
+        (1 - parameters(col_index - colonized_col_init, alpha_col)) * (1 - detected) +
+        (1 - parameters(col_index - colonized_col_init, alpha_col_2)) * detected;
 
     // Get the cases inside the ward: ward_attributable =  coef*W + (1 - W)*F
     ward_matrix.col(col_index) = coef % ward_matrix.col(col_index) +
@@ -110,14 +115,18 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
       // Simulate the probability of detection in those colonized if they are colonized but haven't been detected
       if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 0)){ //Check if is colonized and was not imported
         if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_hosp)) { //Simulate detection with probability rho_col_hosp
-            ward_matrix(row_index, col_index + n_sims) = 1; //Detect
+            ward_matrix(row_index, col_index + n_sims) = time_to_detect; //Detect
+        } else {
+            ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Detect
         }
       } else if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 1)){ //Check if is colonized and imported
         if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_import)) { //Simulate detection with probability rho_col_hosp
-            ward_matrix(row_index, col_index + n_sims) = 1; //Detect
+            ward_matrix(row_index, col_index + n_sims) = time_to_detect; //Detect
+        } else {
+            ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Detect
         }
       } else { //Not colonized
-            ward_matrix(row_index, col_index + n_sims) = 0; //Remove detection if no longer colonized
+            ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Remove detection if no longer colonized
       }
     }
   }
@@ -177,7 +186,8 @@ Column 5: `rho_imported` the probability of being detected for an imported case.
 arma::mat progress_patients_1_timestep(arma::mat& ward_matrix,
                                        const arma::mat& total_patients_per_ward,
                                        const arma::mat& parameters,
-                                       const arma::uword n_sims) {
+                                       const arma::uword n_sims,
+                                       const int& time_to_detect) {
 
   //In ward_matrix the ward is in `ward_col` column
   const arma::uword ward_col_wards    = 1;
@@ -201,7 +211,7 @@ arma::mat progress_patients_1_timestep(arma::mat& ward_matrix,
     arma::mat ward_temp      = ward_matrix.rows(ward_index);
 
     //Apply the function
-    progress_patients_probability_ward_1_timestep(ward_temp, total_patients(0, patient_size_col), parameters, n_sims);
+    ward_temp = progress_patients_probability_ward_1_timestep(ward_temp, total_patients(0, patient_size_col), parameters, n_sims, time_to_detect);
 
     //Update results
     ward_matrix.rows(ward_index) = ward_temp;
@@ -268,6 +278,7 @@ arma::mat simulate_discrete_model_internal_one(const arma::mat& initial_colonize
                                                arma::mat& ward_matrix,
                                                const arma::mat& total_patients_per_ward,
                                                const arma::mat& parameters,
+                                               const int& time_to_detect,
                                                const int seed){
 
   //Set seed for the simulation
@@ -324,7 +335,7 @@ arma::mat simulate_discrete_model_internal_one(const arma::mat& initial_colonize
     arma::mat ward_per_day = model_colonized.rows(model_colonized_idx);
 
     //Get the next timestep of the model
-    progress_patients_1_timestep(ward_per_day, total_patients_per_day, parameters, n_sims);
+    ward_per_day = progress_patients_1_timestep(ward_per_day, total_patients_per_day, parameters, n_sims, time_to_detect);
 
     //Update current colonized values
     model_colonized.rows(model_colonized_idx) = ward_per_day;
