@@ -113,13 +113,17 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
 
       // Simulate the probability of detection in those colonized if they are colonized but haven't been detected
       if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 0)){ //Check if is colonized and was not imported
-        if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_hosp)) { //Simulate detection with probability rho_col_hosp
+        if (ward_matrix(row_index, col_index + n_sims) <= time_to_detect){
+            ward_matrix(row_index, col_index + n_sims) -= 1;
+        } else if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_hosp)) { //Simulate detection with probability rho_col_hosp
             ward_matrix(row_index, col_index + n_sims) = time_to_detect; //Detect
         } else {
             ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Detect
         }
       } else if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 1)){ //Check if is colonized and imported
-        if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_import)) { //Simulate detection with probability rho_col_hosp
+        if (ward_matrix(row_index, col_index + n_sims) <= time_to_detect){
+            ward_matrix(row_index, col_index + n_sims) -= 1; //Detect
+        } else if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_import)) { //Simulate detection with probability rho_col_hosp
             ward_matrix(row_index, col_index + n_sims) = time_to_detect; //Detect
         } else {
             ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Detect
