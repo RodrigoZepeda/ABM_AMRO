@@ -91,8 +91,7 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
         arma::sum(ward_matrix.col(col_index));
 
     // Get the coeficient of multiplication coef = (1 - alpha)*(1 - detected) + (1 - alpha2)*detected
-    //FIXME: Vectorize this part
-    arma::vec detected = arma::conv_to<arma::vec>::from(ward_matrix.col(col_index + n_sims) == 0);
+    arma::vec detected = arma::conv_to<arma::vec>::from(ward_matrix.col(col_index + n_sims) <= 0);
     arma::vec coef =
         (1 - parameters(col_index - colonized_col_init, alpha_col)) * (1 - detected) +
         (1 - parameters(col_index - colonized_col_init, alpha_col_2)) * detected;
@@ -126,7 +125,7 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
             ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Detect
         }
       } else { //Not colonized
-            ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Remove detection if no longer colonized
+            ward_matrix(row_index, col_index + n_sims) -= 1; //Remove detection if no longer colonized
       }
     }
   }
