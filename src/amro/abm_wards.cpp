@@ -118,7 +118,7 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
         } else if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_hosp)) { //Simulate detection with probability rho_col_hosp
             ward_matrix(row_index, col_index + n_sims) = time_to_detect; //Detect
         } else {
-            ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Detect
+            ward_matrix(row_index, col_index + n_sims) = arma::datum::inf; //Detect
         }
       } else if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 1)){ //Check if is colonized and imported
         if (ward_matrix(row_index, col_index + n_sims) <= time_to_detect){
@@ -126,7 +126,7 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
         } else if (arma::randu() < parameters(col_index - colonized_col_init, rho_col_import)) { //Simulate detection with probability rho_col_hosp
             ward_matrix(row_index, col_index + n_sims) = time_to_detect; //Detect
         } else {
-            ward_matrix(row_index, col_index + n_sims) = arma::math::inf(); //Detect
+            ward_matrix(row_index, col_index + n_sims) = arma::datum::inf; //Detect
         }
       } else { //Not colonized
             ward_matrix(row_index, col_index + n_sims) -= 1; //Remove detection if no longer colonized
@@ -372,10 +372,13 @@ arma::mat simulate_discrete_model_internal_one(const arma::mat& initial_colonize
 
 @param col_end Last column with 1's
 
+@param val_eql Value to which we check equality (for counting)
+
 @return A matrix with days being each rows and columns being the number of simulations. Each
 matrix entry corresponds to the total number of 1's in that day/simulation.
 */
-arma::mat total_positive(const arma::mat& model_colonized, const arma::uword col_init, const arma::uword col_end){
+arma::mat total_positive(const arma::mat& model_colonized, const arma::uword col_init, const arma::uword col_end,
+    const int& mode){
 
   //Get the total number of days
   const arma::uword day_column = 0;
@@ -388,8 +391,14 @@ arma::mat total_positive(const arma::mat& model_colonized, const arma::uword col
     //Get the day
     arma::mat subcol = model_colonized.rows(arma::find(model_colonized.col(day_column) == day));
 
-    //Sum to get all 1's
-    model_positive.row(day) = arma::sum(subcol.cols(col_init, col_end), 0);
+    // Perform equality check and convert to numeric matrix
+    arma::mat binary_matrix = arma::conv_to<arma::mat>::from(subcol.cols(col_init, col_end) <= 0);
+    if (mode == 1){
+        arma::mat binary_matrix = arma::conv_to<arma::mat>::from(subcol.cols(col_init, col_end) == 1);
+    }
+
+    // Sum the binary matrix
+    model_positive.row(day) = arma::sum(binary_matrix, 0);
 
   }
 
@@ -414,7 +423,7 @@ arma::mat total_positive_colonized(const arma::mat& model_colonized, const arma:
   const arma::uword colonized_col_init = 6;
   const arma::uword colonized_col_end = colonized_col_init + n_sims - 1;
 
-  return total_positive(model_colonized, colonized_col_init, colonized_col_end);
+  return total_positive(model_colonized, colonized_col_init, colonized_col_end, 1);
 
 }
 
@@ -425,7 +434,7 @@ arma::mat total_positive_detected(const arma::mat& model_colonized, const arma::
   const arma::uword detected_col_end = model_colonized.n_cols - 1;
 
   //Get the total number of positive
-  return total_positive(model_colonized, detected_col_init, detected_col_end);
+  return total_positive(model_colonized, detected_col_init, detected_col_end, 0);
 
 }
 
