@@ -75,7 +75,8 @@ PYBIND11_MODULE(amro, m) {
           "ward_matrix"_a=3,
           "total_patients_per_ward"_a=4,
           "parameters"_a=5,
-          "seed"_a=6);
+          "time_to_detect"_a=6,
+          "seed"_a=7);
 
     m.def("progress_patients_probability_ward_1_timestep", &progress_patients_probability_ward_1_timestep,
         R"doc(
@@ -128,7 +129,8 @@ PYBIND11_MODULE(amro, m) {
           "ward_matrix"_a=1,
           "total_patients"_a=2,
           "parameters"_a=3,
-          "n_sims"_a=4);
+          "n_sims"_a=4,
+          "time_to_detect"_a=5);
 
     m.def("progress_patients_1_timestep", &progress_patients_1_timestep,
         R"doc(
@@ -184,7 +186,8 @@ PYBIND11_MODULE(amro, m) {
           "ward_matrix"_a=1,
           "total_patients_per_ward"_a=2,
           "parameters"_a=3,
-          "n_sims"_a=4);
+          "n_sims"_a=4,
+          "time_to_detect"_a=5);
 
     m.def("total_positive_colonized", &total_positive_colonized,
         R"doc(

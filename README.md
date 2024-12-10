@@ -23,6 +23,11 @@ You can also download the repository and build locally with:
 python setup.py build_ext -i
 ```
 
+and install it:
+```bash
+pip install -e .
+```
+
 You might need some additional libraries installed depending on your operating system:
 
 ### Troubleshooting installation
