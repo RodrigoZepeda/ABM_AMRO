@@ -1,6 +1,6 @@
 import numpy
 import amro
-
+#TODO: FIX TESTS WITH NEW VARIABLES
 def test_progress_patients_clearance_rate_100():
     """
     Tests the run of just one simulation when clearance rate is 100% to check no one remains colonized

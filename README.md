@@ -203,7 +203,6 @@ pip install session_info
 2. You might also need to Select the interpreter via `CTRL + Shift + P > Python Select Interpreter > AMRO`
 
 
-
 ## Tutorials 
 
 Go to the `tutorial/` folder for tutorials
