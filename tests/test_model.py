@@ -228,7 +228,7 @@ def test_detected_persistance():
         [0.3],  # Rho for new cases
     ]).transpose()
     model_run = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 0, 1, 1)
-    assert numpy.all(model_run[:, 6] == (model_run[:, 7] <= 0))
+    assert numpy.all((model_run[:, 6] == 1) == (model_run[:, 7] <= 0))
 
 def test_initial_detected_equals_1_all_colonized_detected():
     """
@@ -258,7 +258,7 @@ def test_initial_detected_equals_1_all_colonized_detected():
         [1.0],  # Rho for new cases
     ]).transpose()
     model_run = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 0, 1, 1)
-    assert numpy.all((model_run[:, 7]  <= 0)== model_run[:, 6])
+    assert numpy.all((model_run[:, 7]  <= 0)== (model_run[:, 6] == 1))
 
 def test_sum_of_positives_colonized():
     ward_matrix = numpy.array([
