@@ -210,7 +210,7 @@ def test_detected_persistance():
         [20,10,12], #Next day
     ]).transpose()
     initial_colonized = numpy.array([[1, 0, 1, 0, 0, 1]]).transpose()
-    initial_detected = numpy.array([[1, 0, 0, 0, 0, 0]]).transpose()
+    initial_detected = numpy.array([[1, 0, 1, 0, 0, 1]]).transpose()
     ward_matrix = numpy.array([
         [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2],  # Day
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Ward
@@ -225,7 +225,7 @@ def test_detected_persistance():
         [0.0],  # Gamma
         [1.0],  # Rho
         [0.0],  # New alpha
-        [0.3],  # Rho for new cases
+        [1.0],  # Rho for new cases
     ]).transpose()
     model_run = amro.simulate_discrete_model(initial_colonized, initial_detected, ward_matrix, total_patients, parameters, 0, 1, 1)
     assert numpy.all((model_run[:, 6] == 1) == (model_run[:, 7] <= 0))
