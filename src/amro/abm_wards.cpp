@@ -126,26 +126,26 @@ arma::mat progress_patients_probability_ward_1_timestep(arma::mat& ward_matrix,
       // or a negative number if it is already detected.
 
       // * Colonized and not imported:
-      if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 0)){
-        // Check whether it has already been tested but results haven't come yet.
+      if ((ward_matrix(row_index, col_index) == 1) && (ward_matrix(row_index, arrivals_col) == 0)){
+        // Check whether it has already been tested / detected but results haven't come yet.
         if (ward_matrix(row_index, col_index + n_sims) <= time_to_detect){
             ward_matrix(row_index, col_index + n_sims) -= 1;
-        // Else we simulate a detection with probability rho_col_hosp if today is a day for detecting
-        } else if (detect_today_hospitalized & (arma::randu() < parameters(col_index - colonized_col_init, rho_col_hosp))) { //Simulate detection with probability rho_col_hosp
+        // Else we simulate a detection with probability rho_col_hosp if today is a day for testing
+        } else if (detect_today_hospitalized && (arma::randu() <= parameters(col_index - colonized_col_init, rho_col_hosp))) {
             ward_matrix(row_index, col_index + n_sims) = time_to_detect;
         // Else the individual has not been detected today
         } else {
             ward_matrix(row_index, col_index + n_sims) = arma::datum::inf;
         }
       // * Colonized and imported cases:
-      } else if ((ward_matrix(row_index, col_index) == 1) & (ward_matrix(row_index, arrivals_col) == 1)){
+      } else if ((ward_matrix(row_index, col_index) == 1) && (ward_matrix(row_index, arrivals_col) == 1)){
         // Check whether it has already been tested but results haven't come yet.
         if (ward_matrix(row_index, col_index + n_sims) <= time_to_detect){
             ward_matrix(row_index, col_index + n_sims) -= 1;
         // Else we simulate a detection with probability rho_col_import if today is a day for detecting
-        } else if (detect_today_arrival & (arma::randu() < parameters(col_index - colonized_col_init, rho_col_import))) {
+        } else if (detect_today_arrival && (arma::randu() <= parameters(col_index - colonized_col_init, rho_col_import))) {
             ward_matrix(row_index, col_index + n_sims) = time_to_detect;
-        // Else the individual has not been detected today
+        // Else the individual was not detected today
         } else {
             ward_matrix(row_index, col_index + n_sims) = arma::datum::inf;
         }
@@ -246,7 +246,7 @@ arma::mat progress_patients_1_timestep(arma::mat& ward_matrix,
     arma::mat ward_temp      = ward_matrix.rows(ward_index);
 
     //Apply the function
-    ward_temp = progress_patients_probability_ward_1_timestep(ward_temp, total_patients(0, patient_size_col),
+    progress_patients_probability_ward_1_timestep(ward_temp, total_patients(0, patient_size_col),
         parameters, n_sims, time_to_detect, detect_today_hospitalized, detect_today_arrival);
 
     //Update results
@@ -355,13 +355,14 @@ arma::mat simulate_discrete_model_internal_one(const arma::mat& initial_colonize
   //Get the total amount of days
   arma::uword total_days = arma::max(total_patients_per_ward.col(day_col_patients));
 
-  //Create initial matrix for results
+  //Create initial matrix for results and initialize column with oo value
   arma::mat model_colonized(ward_matrix.n_rows, ward_matrix.n_cols + 2*n_sims);
+  model_colonized.cols(detected_cols).fill(arma::datum::inf);
 
   //Get initial probability of being colonized
   arma::mat uniform_mat_colonized(initial_colonized_probability.n_rows, n_sims, arma::fill::randu);               //Simulate random numbers
   arma::mat is_colonized = arma::conv_to<arma::mat>::from(uniform_mat_colonized < initial_colonized_probability); //Keep random numbers with probability initial_colonized
-  model_colonized.submat(0, colonized_col_init, initial_colonized_probability.n_rows - 1,               //Substitute those colonized into initial matrix
+  model_colonized.submat(0, colonized_col_init, initial_colonized_probability.n_rows - 1,                         //Substitute those colonized into initial matrix
                          colonized_col_init + n_sims - 1) = is_colonized;
 
   //Get initial probability of being detected given colonized
@@ -391,7 +392,8 @@ arma::mat simulate_discrete_model_internal_one(const arma::mat& initial_colonize
     test_arrivals = (day % testing_schedule_arrivals) == 0;
 
     //Get the next timestep of the model
-    ward_per_day = progress_patients_1_timestep(ward_per_day, total_patients_per_day, parameters, n_sims, time_to_detect, test_hospitalized, test_arrivals);
+    progress_patients_1_timestep(ward_per_day, total_patients_per_day, parameters, n_sims,
+            time_to_detect, test_hospitalized, test_arrivals);
 
     //Update current colonized values
     model_colonized.rows(model_colonized_idx) = ward_per_day;
@@ -401,9 +403,9 @@ arma::mat simulate_discrete_model_internal_one(const arma::mat& initial_colonize
     arma::uvec active_columns   = arma::conv_to<arma::uvec>::from(active_wards_next.col(next_day_col));
 
     //Persistance of colonized and detected in next snapshot
-
     model_colonized.submat(active_columns, colonized_cols) = active_wards_next.cols(colonized_cols);
     model_colonized.submat(active_columns, detected_cols)  = active_wards_next.cols(detected_cols);
+
 
   }
 
@@ -445,9 +447,11 @@ arma::mat total_positive(const arma::mat& model_colonized, const arma::uword col
     arma::mat subcol = model_colonized.rows(arma::find(model_colonized.col(day_column) == day));
 
     // Perform equality check and convert to numeric matrix
-    arma::mat binary_matrix = arma::conv_to<arma::mat>::from(subcol.cols(col_init, col_end) <= 0);
-    if (mode == 1){
-        arma::mat binary_matrix = arma::conv_to<arma::mat>::from(subcol.cols(col_init, col_end) == 1);
+    arma::mat binary_matrix = arma::conv_to<arma::mat>::from(subcol.cols(col_init, col_end));
+    if (mode == 0){
+        binary_matrix = arma::conv_to<arma::mat>::from(subcol.cols(col_init, col_end) <= 0);
+    } else if (mode == 1){
+        binary_matrix = arma::conv_to<arma::mat>::from(subcol.cols(col_init, col_end) == 1);
     }
 
     // Sum the binary matrix

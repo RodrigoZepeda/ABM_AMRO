@@ -1,6 +1,7 @@
 import numpy
 import amro
 #TODO: FIX TESTS WITH NEW VARIABLES
+#There should be a test that if we detect all promptly then colonized should equal deected
 def test_progress_patients_clearance_rate_100():
     """
     Tests the run of just one simulation when clearance rate is 100% to check no one remains colonized
@@ -9,7 +10,7 @@ def test_progress_patients_clearance_rate_100():
         [0, 0, 0, 0, 0, 0],        # Day
         [1, 1, 1, 1, 1, 1],        # Ward
         [52, 53, 17, 200, 87, 99], # MRN
-        [0, 0, 0, 0, 0, 0],        # New_arrival
+        [0, 0, 0, 0, 0, 0 ],        # New_arrival
         [1, 1, 1, 1, 1, 1],        # Weight
         [-1, -1, -1, -1, -1, -1],  # Next day
         [0, 1, 1, 0, 1, 1],  # Colonized
