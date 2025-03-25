@@ -3,7 +3,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 import sys
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 # Build with `CC=/usr/local/bin/gcc-14 CXX=/usr/local/bin/g++-14 python setup.py build_ext -i`
 # after installing brew install llvm libomp

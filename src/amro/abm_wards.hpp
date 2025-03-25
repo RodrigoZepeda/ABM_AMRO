@@ -35,3 +35,20 @@ arma::mat total_positive_colonized(const arma::mat& model_colonized, const arma:
 arma::mat total_positive_detected(const arma::mat& model_colonized, const arma::uword n_sims);
 
 arma::mat summary_of_total_positive(const arma::mat& model_colonized, const arma::vec quantiles);
+
+arma::mat simulate_and_collapse(arma::mat& ward_matrix,
+                                const arma::mat& total_patients_per_ward,
+                                const double initial_colonized_probability,
+                                const double initial_detected_probability,
+                                const arma::uword initial_patients,
+                                const double alpha,
+                                const double beta,
+                                const double gamma,
+                                const double rho_hospital,
+                                const double alpha2,
+                                const double rho_imported,
+                                const arma::uword n_sims,
+                                const arma::uword time_to_detect,
+                                const arma::uword testing_schedule_hospitalized,
+                                const arma::uword testing_schedule_arrivals,
+                                const int seed);

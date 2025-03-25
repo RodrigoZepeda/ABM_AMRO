@@ -491,6 +491,7 @@ arma::mat total_positive_colonized(const arma::mat& model_colonized, const arma:
 detected colonized cases per simulation and per day.
 
 @param model_colonized A matrix obtained from a `simulate_discrete_model` object
+@param n_sims Number of simulations in `model_colonized`
 
 @return A matrix with days being each rows and columns being the number of simulations. Each
 matrix entry corresponds to the total number of detect colonized cases in that day/simulation.
@@ -536,4 +537,95 @@ arma::mat summary_of_total_positive(const arma::mat& model_positive, const arma:
                           positive_summary.n_cols - 1) = arma::quantile(model_positive, quantiles, 1);
 
   return positive_summary;
+}
+
+/**
+@title Simulate and collapse results into mean counts
+
+@description Simulates the model with given parameters and collapses results into mean daily counts
+
+@param initial_colonized_probability Initial colonization probabilities
+@param initial_detected_probability Initial detection probabilities
+
+@param ward_matrix Ward matrix input
+@param total_patients_per_ward Patient counts per ward
+@param alpha Clearance probability for undetected
+@param beta Force of infection
+@param gamma Probability of imported case being colonized
+@param rho_hospital Probability of detection for hospitalized cases
+@param alpha2 Clearance probability for detected
+@param rho_imported Probability of detection for imported cases
+@param n_sims Number of simulations to run
+@param time_to_detect Time to get test results
+@param testing_schedule_hospitalized Testing frequency for hospitalized
+@param testing_schedule_arrivals Testing frequency for arrivals
+@param seed Random seed
+@return Matrix with days (col 0), mean colonized counts (col 1), and mean detected counts (col 2) as well as sd
+of colonized (col 3) and sd of detected (col 4)
+*/
+arma::mat simulate_and_collapse(arma::mat& ward_matrix,
+                                const arma::mat& total_patients_per_ward,
+                                const double initial_colonized_probability,
+                                const double initial_detected_probability,
+                                const arma::uword initial_patients,
+                                const double alpha,
+                                const double beta,
+                                const double gamma,
+                                const double rho_hospital,
+                                const double alpha2,
+                                const double rho_imported,
+                                const arma::uword n_sims,
+                                const arma::uword time_to_detect,
+                                const arma::uword testing_schedule_hospitalized,
+                                const arma::uword testing_schedule_arrivals,
+                                const int seed) {
+
+    // Create parameter matrix (n_sims rows, 6 columns)
+    arma::mat parameters(n_sims, 6);
+    parameters.col(0).fill(alpha);       // alpha
+    parameters.col(1).fill(beta);        // beta
+    parameters.col(2).fill(gamma);       // gamma
+    parameters.col(3).fill(rho_hospital); // rho_hospital
+    parameters.col(4).fill(alpha2);      // alpha2
+    parameters.col(5).fill(rho_imported); // rho_imported
+
+    // Create initial probability matrices from the double values
+    arma::mat init_col_prob(initial_patients, n_sims);
+    init_col_prob.fill(initial_colonized_probability);
+
+    arma::mat init_det_prob(initial_patients, n_sims);
+    init_det_prob.fill(initial_detected_probability);
+
+    // Run the simulation
+    arma::mat simulation_results = simulate_discrete_model_internal_one(
+        init_col_prob,
+        init_det_prob,
+        ward_matrix,
+        total_patients_per_ward,
+        parameters,
+        time_to_detect,
+        testing_schedule_hospitalized,
+        testing_schedule_arrivals,
+        seed
+    );
+
+    // Get daily counts for colonized and detected
+    arma::mat colonized_counts = total_positive_colonized(simulation_results, n_sims);
+    arma::mat detected_counts  = total_positive_detected(simulation_results, n_sims);
+
+    // Calculate means across simulations
+    arma::vec mean_colonized = arma::mean(colonized_counts, 1);
+    arma::vec mean_detected  = arma::mean(detected_counts, 1);
+    arma::vec std_colonized  = arma::stddev(colonized_counts, 1, 1);
+    arma::vec std_detected   = arma::stddev(detected_counts, 1, 1);
+
+    // Create output matrix with days, mean colonized, mean detected
+    arma::mat results(mean_colonized.n_elem, 5);
+    results.col(0) = arma::regspace(0, mean_colonized.n_elem - 1); // Days
+    results.col(1) = mean_colonized;                               // Mean colonized
+    results.col(2) = mean_detected;                                // Mean detected
+    results.col(1) = std_colonized;                                // Std colonized
+    results.col(2) = std_detected;                                 // Std detected
+
+    return results;
 }
