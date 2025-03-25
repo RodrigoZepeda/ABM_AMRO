@@ -560,7 +560,8 @@ arma::mat summary_of_total_positive(const arma::mat& model_positive, const arma:
 @param testing_schedule_hospitalized Testing frequency for hospitalized
 @param testing_schedule_arrivals Testing frequency for arrivals
 @param seed Random seed
-@return Matrix with days (col 0), mean colonized counts (col 1), and mean detected counts (col 2)
+@return Matrix with days (col 0), mean colonized counts (col 1), and mean detected counts (col 2) as well as sd
+of colonized (col 3) and sd of detected (col 4)
 */
 arma::mat simulate_and_collapse(arma::mat& ward_matrix,
                                 const arma::mat& total_patients_per_ward,
@@ -615,12 +616,16 @@ arma::mat simulate_and_collapse(arma::mat& ward_matrix,
     // Calculate means across simulations
     arma::vec mean_colonized = arma::mean(colonized_counts, 1);
     arma::vec mean_detected  = arma::mean(detected_counts, 1);
+    arma::vec std_colonized  = arma::stddev(colonized_counts, 1, 1);
+    arma::vec std_detected   = arma::stddev(detected_counts, 1, 1);
 
     // Create output matrix with days, mean colonized, mean detected
-    arma::mat results(mean_colonized.n_elem, 3);
+    arma::mat results(mean_colonized.n_elem, 5);
     results.col(0) = arma::regspace(0, mean_colonized.n_elem - 1); // Days
     results.col(1) = mean_colonized;                               // Mean colonized
     results.col(2) = mean_detected;                                // Mean detected
+    results.col(1) = std_colonized;                                // Std colonized
+    results.col(2) = std_detected;                                 // Std detected
 
     return results;
 }

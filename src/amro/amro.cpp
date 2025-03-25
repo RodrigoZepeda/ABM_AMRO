@@ -297,6 +297,8 @@ PYBIND11_MODULE(amro, m) {
             - Column 0: Day number
             - Column 1: Mean number of colonized cases
             - Column 2: Mean number of detected cases
+            - Column 3: Standard deviation of number of colonized cases
+            - Column 4: Standard deviation of number of detected cases
     )doc",
     "ward_matrix"_a,
     "total_patients_per_ward"_a,
