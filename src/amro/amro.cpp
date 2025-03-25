@@ -270,6 +270,51 @@ PYBIND11_MODULE(amro, m) {
           "model_colonized"_a=1,
           "quantiles"_a=2);
 
+    m.def("simulate_and_collapse", &simulate_and_collapse,
+    R"doc(
+        @title Simulate and Collapse Model Results
+
+        @description Runs multiple simulations of the ward transmission model and returns mean daily counts
+        of colonized and detected cases. This provides a summary view of model behavior.
+
+        @param initial_colonized_probability Initial probability of colonization for all patients (0-1)
+        @param initial_detected_probability Initial probability of detection for colonized patients (0-1)
+        @param ward_matrix Matrix containing ward assignments and patient information
+        @param total_patients_per_ward Matrix with daily patient counts per ward
+        @param alpha Clearance probability for undetected cases (0-1)
+        @param beta Force of infection parameter (>0)
+        @param gamma Probability imported case is colonized (0-1)
+        @param rho_hospital Detection probability for hospital-acquired cases (0-1)
+        @param alpha2 Clearance probability for detected cases (0-1)
+        @param rho_imported Detection probability for imported cases (0-1)
+        @param n_sims Number of simulations to run (>0)
+        @param time_to_detect Days until detection result is available (≥0)
+        @param testing_schedule_hospitalized Testing interval for hospital patients (days)
+        @param testing_schedule_arrivals Testing interval for new arrivals (days)
+        @param seed Random seed for reproducibility
+
+        @return Matrix with 3 columns:
+            - Column 0: Day number
+            - Column 1: Mean number of colonized cases
+            - Column 2: Mean number of detected cases
+    )doc",
+    "ward_matrix"_a,
+    "total_patients_per_ward"_a,
+    "initial_colonized_probability"_a,
+    "initial_detected_probability"_a,
+    "initial_patients"_a,
+    "alpha"_a,
+    "beta"_a,
+    "gamma"_a,
+    "rho_hospital"_a,
+    "alpha2"_a,
+    "rho_imported"_a,
+    "n_sims"_a=100,
+    "time_to_detect"_a,
+    "testing_schedule_hospitalized"_a,
+    "testing_schedule_arrivals"_a,
+    "seed"_a=2384235);
+
     #ifdef VERSION_INFO
         m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
     #else
